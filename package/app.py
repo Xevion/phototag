@@ -2,6 +2,7 @@ import io, sys, os, time, rawpy, imageio, progressbar
 from google.cloud import vision
 from google.cloud.vision import types
 from PIL import Image
+from package.xmp import writeTags
 
 # The name of the image file to annotate
 input_path = os.path.join(sys.path[0], 'package', 'processing', 'input')
@@ -14,7 +15,7 @@ output_path = os.path.join(sys.path[0], 'package', 'processing', 'output')
 # 3) Read XMP, then write new tags to it
 # 4) Delete temporary file, move NEF/JPEG and XMP
 
-def process_file(file_name):
+def process_file(file_name, xmp):
     global client
 
     # Remove the temporary file
@@ -35,7 +36,7 @@ def process_file(file_name):
         image.thumbnail(size, resample=Image.ANTIALIAS)
         image.save(file_path, format='jpeg', optimize=True, quality=quality)
 
-    base, ext = os.path.splitext(file_name)
+    base = os.path.splitext(file_name)[0]
     temp_file_path = os.path.join(temp_path, base + '.jpeg')
 
     try:
@@ -59,8 +60,14 @@ def process_file(file_name):
         
         # Performs label detection on the image file
         response = client.label_detection(image=image)
-        labels = response.label_annotations
-        print('\tLabels: {}'.format(', '.join([label.description for label in labels])))    
+        labels = [label.description for label in response.label_annotations]
+        print('\tLabels: {}'.format(', '.join(labels)))
+
+        print('\tWriting {} tags to output folder...')
+        writeTags(os.path.join(input_path, xmp), os.path.join(output_path, xmp), labels)
+        print('\tMoving associated original image file...')
+        os.rename(os.path.join(input_path, file_name), os.path.join(output_path, file_name))
+        
     except:
         _cleanup()
         raise
@@ -69,6 +76,16 @@ def process_file(file_name):
 # Driver code for the package
 def run():
     global client
+
+    # Ensure that 'input' and 'output' directories are created
+    if not os.path.exists(input_path):
+        print('Input directory did not exist, creating and quitting.')
+        os.makedirs(input_path)
+        return
+
+    if not os.path.exists(output_path):
+        print('Output directory did not exist. Creating...')
+        os.makedirs(output_path)
 
     # Clients
     client = vision.ImageAnnotatorClient()
@@ -80,7 +97,7 @@ def run():
     # Create the 'temp' directory
     print(f'Initializing file processing for {len(select)} files...')
     os.makedirs(temp_path)
-    
+
     try:
         # Process files
         for index, file in progressbar.progressbar(list(enumerate(select)), redirect_stdout=True, term_width=110):
@@ -99,7 +116,7 @@ def run():
             # Process individual file
             else:
                 print('Processing file {}, \'{}\''.format(index + 1, possibles[0]), end=' | ')
-                process_file(possibles[0])
+                process_file(file_name=possibles[0], xmp=file)
                 time.sleep(0.3)
     except:
         os.rmdir(temp_path)
