@@ -1,5 +1,6 @@
-key/
+package/key/
 *.jpg
 *.png
 *.jpeg
 *.nef
+*.xmp
