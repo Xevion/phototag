@@ -41,8 +41,9 @@ def process_file(file_name, xmp):
 
     try:
         # Process the file into a JPEG
-        rgb = rawpy.imread(os.path.join(input_path, file_name)).postprocess()
-        imageio.imsave(os.path.join(temp_file_path), rgb)
+        rgb = rawpy.imread(os.path.join(input_path, file_name))
+        imageio.imsave(os.path.join(temp_file_path), rgb.postprocess())
+        rgb.close()
 
         # Information on file sizes
         print("Raw Size: {} {}".format(*_size(os.path.join(input_path, file_name))), end=' | ')
@@ -56,6 +57,7 @@ def process_file(file_name, xmp):
         image = Image.open(temp_file_path)
         bytesIO = io.BytesIO()
         image.save(bytesIO, format='jpeg')
+        image.close()
         image = types.Image(content=bytesIO.getvalue())
         
         # Performs label detection on the image file
