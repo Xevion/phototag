@@ -1,8 +1,8 @@
-import io, sys, os, time, rawpy, imageio, progressbar
-from google.cloud import vision
+import io, sys, os, time, rawpy, imageio, progressbar, shutil, iptcinfo3
 from google.cloud.vision import types
+from google.cloud import vision
+from package import xmp
 from PIL import Image
-from package.xmp import writeTags
 
 # The name of the image file to annotate
 input_path = os.path.join(sys.path[0], 'package', 'processing', 'input')
@@ -36,7 +36,7 @@ def process_file(file_name, xmp):
         image.thumbnail(size, resample=Image.ANTIALIAS)
         image.save(file_path, format='jpeg', optimize=True, quality=quality)
 
-    base = os.path.splitext(file_name)[0]
+    base, ext = os.path.splitext(file_name)
     temp_file_path = os.path.join(temp_path, base + '.jpeg')
 
     try:
@@ -64,11 +64,20 @@ def process_file(file_name, xmp):
         response = client.label_detection(image=image)
         labels = [label.description for label in response.label_annotations]
         print('\tLabels: {}'.format(', '.join(labels)))
-
-        print('\tWriting {} tags to output folder...')
-        writeTags(os.path.join(input_path, xmp), os.path.join(output_path, xmp), labels)
-        print('\tMoving associated original image file...')
-        os.rename(os.path.join(input_path, file_name), os.path.join(output_path, file_name))
+        if ext == '.NEF':
+            print('\tWriting {} tags to output XMP...'.format(len(labels)))
+            xmp.writeXMP(os.path.join(input_path, xmp), os.path.join(output_path, xmp), labels)
+        else:
+            print('\tWriting {} tags to output {}'.format(len(labels), ext[1:].upper()))
+            info = iptcinfo3.IPTCInfo(os.path.join(input_path, xmp))
+            info['keywords'].extend(labels)
+            info.save()
+            # Remove the strange ghost file
+            os.remove(os.path.join(input_path, xmp) + '~')
+            print('\tMoving associated original image file...')
+        # Copy dry-run
+        shutil.copy2(os.path.join(input_path, file_name), os.path.join(output_path, file_name))
+        # os.rename(os.path.join(input_path, file_name), os.path.join(output_path, file_name))
         
     except:
         _cleanup()
