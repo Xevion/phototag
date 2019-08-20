@@ -22,4 +22,5 @@ Support for .NEF RAW file compression with .XMP metadata files.
 
 I've typed up a good file with everything I've learned about XMP files, Adobe, and just how complex this problem really was for me.
 
-[./LEARNING.md](./LEARNING.md)
+[./LEARNING.md](./LEARNING.md)Contribution: 2019-08-20 20:00
+
