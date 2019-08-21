@@ -58,7 +58,7 @@ def process_file(file_name, xmp):
         bytesIO = io.BytesIO()
         image.save(bytesIO, format='jpeg')
         image.close()
-        image = types.Image(content=bytesIO.getvalue())
+        image = vision.types.Image(content=bytesIO.getvalue())
         
         # Performs label detection on the image file
         response = client.label_detection(image=image)
