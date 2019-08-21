@@ -15,7 +15,7 @@ output_path = os.path.join(sys.path[0], 'package', 'processing', 'output')
 # 3) Read XMP, then write new tags to it
 # 4) Delete temporary file, move NEF/JPEG and XMP
 
-def process_file(file_name, xmp):
+def process_file(file_name, xmp_name=None):
     global client
 
     # Remove the temporary file
@@ -64,17 +64,16 @@ def process_file(file_name, xmp):
         response = client.label_detection(image=image)
         labels = [label.description for label in response.label_annotations]
         print('\tLabels: {}'.format(', '.join(labels)))
-        if ext == '.NEF':
+        if xmp_name:
             print('\tWriting {} tags to output XMP...'.format(len(labels)))
-            xmp.writeXMP(os.path.join(input_path, xmp), os.path.join(output_path, xmp), labels)
+            xmp.writeXMP(os.path.join(input_path, xmp_name), os.path.join(output_path, xmp_name), labels)
         else:
             print('\tWriting {} tags to output {}'.format(len(labels), ext[1:].upper()))
-            info = iptcinfo3.IPTCInfo(os.path.join(input_path, xmp))
+            info = iptcinfo3.IPTCInfo(os.path.join(input_path, file_name))
             info['keywords'].extend(labels)
             info.save()
-            # Remove the strange ghost file
-            os.remove(os.path.join(input_path, xmp) + '~')
             print('\tMoving associated original image file...')
+
         # Copy dry-run
         shutil.copy2(os.path.join(input_path, file_name), os.path.join(output_path, file_name))
         # os.rename(os.path.join(input_path, file_name), os.path.join(output_path, file_name))
@@ -103,7 +102,7 @@ def run():
 
     # Find files we want to process based on if they have a corresponding .XMP
     files = os.listdir(input_path)
-    select = [file for file in files if os.path.splitext(file)[1] == '.xmp']
+    select = [file for file in files if os.path.splitext(file)[1] != '.xmp']
 
     # Create the 'temp' directory
     print(f'Initializing file processing for {len(select)} files...')
@@ -112,23 +111,40 @@ def run():
     try:
         # Process files
         for index, file in progressbar.progressbar(list(enumerate(select)), redirect_stdout=True, term_width=110):
-            # Get all possible files
-            possibles = [possible for possible in files if
-            possible.startswith(os.path.splitext(file)[0])
-            and not possible.endswith(os.path.splitext(file)[1])]
-            
-            # Skip and warn if more than 1 possible files, user error
-            if len(possibles) > 1:
-                print('More than 1 possible binding file for \'{}\'...'.format(file))
-                print('\n'.join(['>>> {}'.format(possible) for possible in possibles]))
-            # Zero possible files, user error, likely
-            elif len(possibles) <= 0:
-                print('Zero possible files for \'{}\'. skipping...'.format(file))
-            # Process individual file
-            else:
-                print('Processing file {}, \'{}\''.format(index + 1, possibles[0]), end=' | ')
-                process_file(file_name=possibles[0], xmp=file)
-                time.sleep(0.3)
+            name, ext = os.path.splitext(file)
+            ext = ext.upper()
+            # Raw files contain their metadata in an XMP file usually
+            if ext in ['.NEF', '.CR2']:
+                # Get all possible files
+                identicals = [possible for possible in files
+                            if possible.startswith(os.path.splitext(file)[0])
+                            and not possible.endswith(os.path.splitext(file)[1])
+                            and not possible.upper().endswith('.XMP')]
+
+                # Alert the user that there are duplicates in the directory and ask whether or not to continue
+                if len(identicals) > 0:
+                    print('Identical files were found in the directory, continue?')
+                    print(',\n\t'.join(identicals))
+
+                xmps = [possible for possible in files
+                        if possible.startswith(os.path.splitext(file)[0])
+                        and possible.upper().endswith('.XMP')]
+
+                # Skip and warn if more than 1 possible files, user error
+                if len(xmps) > 1:
+                    print('More than 1 possible XMP metadata file for \'{}\'...'.format(file))
+                    print(',\n'.join(['\t{}'.format(possible) for possible in xmps]))
+                # Zero possible files, user error, likely
+                elif len(xmps) <= 0:
+                    print('No matching XMP metadata file for \'{}\'. skipping...'.format(file))
+                # Process individual file
+                else:
+                    print('Processing file {}, \'{}\''.format(index + 1, xmps[0]), end=' | ')
+                    process_file(file_name=file, xmp_name=xmps[0])
+            elif ext in ['.JPEG', '.JPG', '.PNG']:
+                print('Processing file {}, \'{}\''.format(index + 1, file), end=' | ')
+                process_file(file_name=file)
+
     except:
         os.rmdir(temp_path)
         raise

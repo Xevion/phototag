@@ -17,3 +17,9 @@ Automatic compression of photos for minimal data usage on both your and Google's
 Support for .NEF RAW file compression with .XMP metadata files.
 
 - With added support for all non .NEF files with basic 
+
+## Learning
+
+I've typed up a good file with everything I've learned about XMP files, Adobe, and just how complex this problem really was for me.
+
+[./LEARNING.md](./LEARNING.md)
