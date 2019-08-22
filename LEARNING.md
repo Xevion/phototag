@@ -26,5 +26,16 @@ The real punch in the gut comes now - Time to implement that actual tagging oper
 
 I also had to think about turning this application into a commandline utility for quickly tagging all the photos on my machine - Would it overwrite files in place? What happens if my utility goes haywire? Would I be storing backups of the `.XMP` files? What happens when it's a heavily modified `.XMP` file, those can get very large!
 
+## Working with XMP Sidecar files
+
 Before I could even think about all that, I had to verify that I could work with `.XMP` files in the first place, as my current setup using Regex was failing when it came down to adding tags to something that has never been tagged before. Worse yet, I had and still have no idea what most of the stuff present in a `.XMP` file means, so it was clear that I had to resort to something with true XMP read and write capabilities.
 
+Shortly after my failure to get `py3exiv2` working, as well as a second try at getting `exempi` working using `msys2`, I decided to ask StackOverflow, and that's when I first saw the mention of a `sidecar file`, and `XML`.
+
+Yup, I finally realized that XMP == XML. The only difference was that XMP had a couple more tags and used namespaces for all the custom tags.
+
+With this, I instantly bolted for XML parsing modules and got to work figuring out how I could best parse and navigate the XML module. Within hours, and after a long ass sleep, I got a working read and writing keywords setup that should be sustainable enough for my purposes.
+
+## Final legs on the first release of the project
+
+With reading and writing out of the way, all that was left for the module was to simply write the reading and writing commands up, and fix the module up so someone could actually understand what was going on.
