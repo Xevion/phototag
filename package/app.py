@@ -64,15 +64,19 @@ def process_file(file_name, xmp_name=None):
         response = client.label_detection(image=image)
         labels = [label.description for label in response.label_annotations]
         print('\tLabels: {}'.format(', '.join(labels)))
+        
+        # XMP sidecar file specified, write to it using XML module
         if xmp_name:
             print('\tWriting {} tags to output XMP...'.format(len(labels)))
-            xmp.writeXMP(os.path.join(input_path, xmp_name), os.path.join(output_path, xmp_name), labels)
+            parser = xmp.XMPParser(os.path.join(input_path, xmp_name))
+            parser.add_keywords(labels)
+            parser.save(os.path.join(output_path, xmp_name))
+        # No XMP file is specified, using IPTC tagging
         else:
             print('\tWriting {} tags to output {}'.format(len(labels), ext[1:].upper()))
             info = iptcinfo3.IPTCInfo(os.path.join(input_path, file_name))
             info['keywords'].extend(labels)
             info.save()
-            print('\tMoving associated original image file...')
 
         # Copy dry-run
         shutil.copy2(os.path.join(input_path, file_name), os.path.join(output_path, file_name))
@@ -150,5 +154,6 @@ def run():
         raise
 
     # Remove the directory, we are done here
-    print('Cleaning up temporary directory...')
+    print('Cleaning up temporary directory...', end=' ')
     os.rmdir(temp_path)
+    print('Complete.')

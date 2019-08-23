@@ -1,28 +1,61 @@
-# from libxmp import file_to_dict
-import os, sys, re
+import xml.etree.ElementTree as ET
+import pprint as pp
+import random, string
 
-mainPattern = r'<dc:subject>\n\s+<rdf:Bag>\n(?:     <rdf:li>.+<\/rdf:li>\n)*\s+<\/rdf:Bag>\n\s+<\/dc:subject>\n'
-subPattern = r'<rdf:li>(.*)</rdf:li>\n'
-subFormatPattern = '     <rdf:li>{}</rdf:li>\n'
+rnd = lambda length=10 : ''.join(random.choices(list(string.ascii_letters), k=length))
+toText = lambda items : list(map(lambda item : item.text, items))
 
-# Write tags to an XMP file, using regex patterns
-def writeXMP(inputPath, outputPath, tags):
-    data = open(inputPath, 'r').read()
-    # Detect and find the <dc:Subject: part
-    match = re.search(mainPattern, data)
-    # If it's not found, we just add the tags area right below the creator tag
-    if not match:
-        addition = """\n   <dc:subject>\n    <rdf:Bag>\n    </rdf:Bag>\n   </dc:subject>"""
-        look = data.find('</dc:creator>') + 13
-        data = data[:look] + addition + data[look:]
-        match = re.search(mainPattern, data)
-    # Get last matching tag
-    submatch = None
-    for submatch in re.finditer(subPattern, match.group(0)):
-        pass
-    # Calculate very end
-    spanend = match.span()[0] + (submatch.span()[1] if submatch else 0)
-   # add tags to end
-    data = data[:spanend] + ''.join(subFormatPattern.format(tag) for tag in tags) + data[spanend:]
-    # Write file to disk
-    open(outputPath, 'w+').write( data)
+# Constant Namespace Types
+RDF = '{http://www.w3.org/1999/02/22-rdf-syntax-ns#}RDF'
+SUBJECT = '{http://purl.org/dc/elements/1.1/}subject'
+DESCRIPTION = '{http://www.w3.org/1999/02/22-rdf-syntax-ns#}Description'
+DESCRIPTION_LOWER = '{http://purl.org/dc/elements/1.1/}description'
+ALT = '{http://www.w3.org/1999/02/22-rdf-syntax-ns#}Alt'
+LI = '{http://www.w3.org/1999/02/22-rdf-syntax-ns#}li'
+BAG = '{http://www.w3.org/1999/02/22-rdf-syntax-ns#}Bag'
+
+class XMPParser(object):
+    def __init__(self, path):
+        # Root tag area
+        self.path = path
+        self.xmp = ET.parse(path)
+        self.root = self.xmp.getroot()
+        self.root = self.root.find(RDF)
+        self.root = self.root.find(DESCRIPTION)
+
+        # Description Tag
+        # self._ready_descrition()
+        # self.description = self.root.find(DESCRIPTION_LOWER)
+        # if self.description:
+        #     self.description = self.description.find(ALT)
+        #     self.description = self.description.find(LI)
+    
+        # Keyword Tag
+        self._ready_keywords()
+        self.keywords = self.root.find(SUBJECT)
+        self.keywords = self.keywords.find(BAG)
+
+    def _ready_keywords(self):
+        subject = self.root.find(SUBJECT)
+        if subject:
+            bag = subject.find(BAG)
+            if bag:
+                self.keywords = bag
+            else:
+                subject.append(ET.Element(BAG))
+        else:
+            subject = ET.Element(SUBJECT)
+            subject.append(ET.Element(BAG))
+            self.root.append(subject)
+    
+    def save(self, outpath=None):
+        self.xmp.write(outpath or self.path)
+
+    def add_keywords(self, keywords):
+        elements = [ET.Element(LI) for key in keywords]
+        for i, key in enumerate(elements):
+            key.text = keywords[i]
+        self.keywords.extend(elements)
+
+    def add_keyword(self, keyword):
+        self.add_keywords([keyword])
