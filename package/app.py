@@ -31,27 +31,36 @@ def process_file(file_name, xmp_name=None):
         return round(size, 2), type
 
     # Optimizes a file using JPEG thumbnailing and compression.
-    def _optimize(file_path, size=(512, 512), quality=85):
+    def _optimize(file_path, size=(512, 512), quality=85, copy=None):
         image = Image.open(file_path)
         image.thumbnail(size, resample=Image.ANTIALIAS)
-        image.save(file_path, format='jpeg', optimize=True, quality=quality)
+        if copy:
+            image.save(copy, format='jpeg', optimize=True, quality=quality)
+        else:
+            image.save(file_path, format='jpeg', optimize=True, quality=quality)
 
     base, ext = os.path.splitext(file_name)
     temp_file_path = os.path.join(temp_path, base + '.jpeg')
 
     try:
-        # Process the file into a JPEG
-        rgb = rawpy.imread(os.path.join(input_path, file_name))
-        imageio.imsave(os.path.join(temp_file_path), rgb.postprocess())
-        rgb.close()
+        if xmp_name:
+            # Process the file into a JPEG
+            rgb = rawpy.imread(os.path.join(input_path, file_name))
+            imageio.imsave(temp_file_path, rgb.postprocess())
+            rgb.close()
 
-        # Information on file sizes
-        print("Raw Size: {} {}".format(*_size(os.path.join(input_path, file_name))), end=' | ')
-        print("Resave Size: {} {}".format(*_size(temp_file_path)), end=' | ')
-        pre = os.path.getsize(temp_file_path)
-        _optimize(temp_file_path)
-        post = os.path.getsize(temp_file_path)
-        print("Optimized Size: {} {} ({}% savings)".format(*_size(temp_file_path), round((1.0 - (post / pre)) * 100), 2) )
+            # Information on file sizes
+            print("Raw Size: {} {}".format(*_size(os.path.join(input_path, file_name))), end=' | ')
+            print("Resave Size: {} {}".format(*_size(temp_file_path)), end=' | ')
+            pre = os.path.getsize(temp_file_path)
+            _optimize(temp_file_path)
+            post = os.path.getsize(temp_file_path)
+            print("Optimized Size: {} {} ({}% savings)".format(*_size(temp_file_path), round((1.0 - (post / pre)) * 100), 2) )
+        else:
+            pre = os.path.getsize(os.path.join(input_path, file_name))
+            _optimize(os.path.join(input_path, file_name), copy=temp_file_path)
+            post = os.path.getsize(temp_file_path)
+            print("Optimized Size: {} {} ({}% savings)".format(*_size(temp_file_path), round((1.0 - (post / pre)) * 100), 2) )
 
         # Open the image, read as bytes, convert to types Image
         image = Image.open(temp_file_path)
@@ -70,18 +79,22 @@ def process_file(file_name, xmp_name=None):
             print('\tWriting {} tags to output XMP...'.format(len(labels)))
             parser = xmp.XMPParser(os.path.join(input_path, xmp_name))
             parser.add_keywords(labels)
+            # Save the new XMP file
             parser.save(os.path.join(output_path, xmp_name))
+            # Remove the old XMP file
+            os.remove(os.path.join(input_path, xmp_name))
         # No XMP file is specified, using IPTC tagging
         else:
             print('\tWriting {} tags to output {}'.format(len(labels), ext[1:].upper()))
             info = iptcinfo3.IPTCInfo(os.path.join(input_path, file_name))
             info['keywords'].extend(labels)
             info.save()
+            # Remove the weird ghsot file created by this iptc read/writer.
+            os.remove(os.path.join(input_path, file_name + '~'))
 
         # Copy dry-run
-        shutil.copy2(os.path.join(input_path, file_name), os.path.join(output_path, file_name))
-        # os.rename(os.path.join(input_path, file_name), os.path.join(output_path, file_name))
-        
+        # shutil.copy2(os.path.join(input_path, file_name), os.path.join(output_path, file_name))
+        os.rename(os.path.join(input_path, file_name), os.path.join(output_path, file_name))
     except:
         _cleanup()
         raise
@@ -154,6 +167,5 @@ def run():
         raise
 
     # Remove the directory, we are done here
-    print('Cleaning up temporary directory...', end=' ')
+    print('Cleaning up temporary directory...')
     os.rmdir(temp_path)
-    print('Complete.')
