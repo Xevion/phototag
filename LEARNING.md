@@ -39,3 +39,11 @@ With this, I instantly bolted for XML parsing modules and got to work figuring o
 ## Final legs on the first release of the project
 
 With reading and writing out of the way, all that was left for the module was to simply write the reading and writing commands up, and fix the module up so someone could actually understand what was going on.
+
+These were pretty easy to do, but I've gotten unusually doing anything but my project lately, so I've been kinda slow at actually figuring it out.
+
+The project from here is essentially in a state where it either needs to be split up into multiple sections to be truly useful and fast to the end user.
+
+One such method would be a commandline utility, invoked by something like `phototag -R ./` which would **`R`**`ecursively` tag everything in the folder and below it.
+
+For now, I leave the project at this state.
