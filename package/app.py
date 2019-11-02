@@ -1,8 +1,16 @@
-import io, sys, os, time, rawpy, imageio, progressbar, shutil
+import io
+import sys
+import os
+import time
+import rawpy
+import imageio
+import progressbar
+import shutil
+import logging
 
-from .xmp import XMPParser
 from google.cloud import vision
 
+from .xmp import XMPParser
 from .process import FileProcessor
 from . import INPUT_PATH, TEMP_PATH, OUTPUT_PATH, PROCESSING_PATH
 from . import RAW_EXTS, LOSSY_EXTS
@@ -15,16 +23,6 @@ from . import RAW_EXTS, LOSSY_EXTS
 
 # Driver code for the package
 def run():
-    # Ensure that 'input' and 'output' directories are created
-    if not os.path.exists(INPUT_PATH):
-        print('Input directory did not exist, creating and quitting.')
-        os.makedirs(INPUT_PATH)
-        return
-
-    if not os.path.exists(OUTPUT_PATH):
-        print('Output directory did not exist. Creating...')
-        os.makedirs(OUTPUT_PATH)
-
     # Client
     client = vision.ImageAnnotatorClient()
 
@@ -43,33 +41,9 @@ def run():
             ext = ext.lower().strip('.')
             # Raw files contain their metadata in an XMP file usually
             if ext in RAW_EXTS:
-                # Get all possible files
-                identicals = [possible for possible in files
-                            if possible.startswith(os.path.splitext(file)[0])
-                            and not possible.endswith(os.path.splitext(file)[1])
-                            and not possible.upper().endswith('.XMP')]
-
-                # Alert the user that there are duplicates in the directory and ask whether or not to continue
-                if len(identicals) > 0:
-                    print('Identical files were the directory, continue?')
-                    print(',\n\t'.join(identicals))
-
-                xmps = [possible for possible in files
-                        if possible.startswith(os.path.splitext(file)[0])
-                        and possible.upper().endswith('.XMP')]
-
-                # Skip and warn if more than 1 possible files, user error
-                if len(xmps) > 1:
-                    print('More than 1 possible XMP metadata file for \'{}\'...'.format(file))
-                    print(',\n'.join(['\t{}'.format(possible) for possible in xmps]))
-                # Zero possible files, user error, likely
-                elif len(xmps) <= 0:
-                    print('No matching XMP metadata file for \'{}\'. skipping...'.format(file))
-                # Process individual file
-                else:
-                    print('Processing file {}, \'{}\''.format(index + 1, xmps[0]), end=' | ')
-                    file = FileProcessor(file, xmps[0])
-                    file.run(client)
+                print('Processing file {}, \'{}\''.format(index + 1, xmps[0]), end=' | ')
+                file = FileProcessor(file, xmps[0])
+                file.run(client)
             elif ext in LOSSY_EXTS:
                 print('Processing file {}, \'{}\''.format(index + 1, file), end=' | ')
                 file = FileProcessor(file)

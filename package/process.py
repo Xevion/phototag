@@ -32,19 +32,14 @@ class FileProcessor(object):
         rgb.close()
 
         # Information on file sizes
-        print("Raw Size: {} {}".format(*self._size(os.path.join(INPUT_PATH, self.file_name))), end=' | ')
-        print("Resave Size: {} {}".format(*self._size(self.temp_file_path)), end=' | ')
         pre = os.path.getsize(self.temp_file_path)
         self._optimize(self.temp_file_path)
         post = os.path.getsize(self.temp_file_path)
-        print("Optimized Size: {} {} ({}% savings)".format(*self._size(self.temp_file_path), round((1.0 - (post / pre)) * 100), 2) )
     
     def basicOptimize(self):
         pre = os.path.getsize(os.path.join(INPUT_PATH, self.file_name))
         self._optimize(os.path.join(INPUT_PATH, self.file_name), copy=self.temp_file_path)
         post = os.path.getsize(self.temp_file_path)
-        print("Optimized Size: {} {} ({}% savings)".format(*self._size(self.temp_file_path), round((1.0 - (post / pre)) * 100), 2) )
-
 
     def run(self, client):
         try:
