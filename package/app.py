@@ -27,25 +27,20 @@ def run():
     client = vision.ImageAnnotatorClient()
 
     # Find files we want to process based on if they have a corresponding .XMP
+    logging.info('Locating processable files...')
     files = os.listdir(INPUT_PATH)
     select = [file for file in files if os.path.splitext(file)[1] != '.xmp']
 
     # Create the 'temp' directory
-    print(f'Initializing file processing for {len(select)} files...')
+    logging.info(f'Found {len(files)} valid files, beginning processing...')
     os.makedirs(TEMP_PATH)
 
     try:
         # Process files
         for index, file in progressbar.progressbar(list(enumerate(select)), redirect_stdout=True, term_width=110):
-            name, ext = os.path.splitext(file)
-            ext = ext.lower().strip('.')
-            # Raw files contain their metadata in an XMP file usually
-            if ext in RAW_EXTS:
-                print('Processing file {}, \'{}\''.format(index + 1, xmps[0]), end=' | ')
-                file = FileProcessor(file, xmps[0])
-                file.run(client)
-            elif ext in LOSSY_EXTS:
-                print('Processing file {}, \'{}\''.format(index + 1, file), end=' | ')
+            _, ext = os.path.splitext(file)
+            if ext in LOSSY_EXTS or ext in RAW_EXTS:
+                logging.info(f"Processing file '{file}'...")
                 file = FileProcessor(file)
                 file.run(client)
     except:
