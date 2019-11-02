@@ -3,7 +3,7 @@ import os
 import io
 from setuptools import find_packages, setup
 
-DEPENDENCIES = []
+DEPENDENCIES = ['Click']
 EXCLUDE_FROM_PACKAGES = []
 CURDIR = sys.path[0]
 
@@ -23,7 +23,10 @@ setup(
     include_package_data=True,
     keywords=[],
     scripts=[],
-    entry_points={"console_scripts": ["phototag=phototag.main:main"]},
+    entry_points='''
+        [console_scripts]
+        phototag=phototag.phototag:cli
+    ''',
     zip_safe=False,
     install_requires=DEPENDENCIES,
     python_requires=">=3.6",
