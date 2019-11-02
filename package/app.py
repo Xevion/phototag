@@ -42,9 +42,9 @@ def run():
             _, ext = os.path.splitext(file)
             ext = ext[1:]
             if ext in LOSSY_EXTS or ext in RAW_EXTS:
-                file = FileProcessor(file)
+                process = FileProcessor(file)
                 logging.info(f"Processing file '{file}'...")
-                file.run(client)
+                process.run(client)
     except Exception as error:
         logging.error(str(error))
         logging.warning(

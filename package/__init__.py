@@ -1,8 +1,12 @@
 import os
 import sys
 import logging
+import progressbar
 
+# Logging and Progressbar work
+progressbar.streams.wrap_stderr()
 logging.basicConfig(level=logging.INFO)
+log = logging.getLogger(__name__)
 
 # Path Constants
 ROOT = sys.path[0]
@@ -10,7 +14,7 @@ PROCESSING_PATH = os.path.join(ROOT, 'package', 'processing')
 INPUT_PATH = os.path.join(PROCESSING_PATH, 'input')
 TEMP_PATH = os.path.join(PROCESSING_PATH, 'temp')
 OUTPUT_PATH = os.path.join(PROCESSING_PATH, 'output')
-logging.info('Path Constants Built.')
+log.info('Path Constants Built.')
 
 # Extension Constants
 RAW_EXTS = [
