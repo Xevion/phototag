@@ -1,7 +1,9 @@
 import sys
 import os
 import logging
-from package import log, app
+from package import app
+
+log = logging.getLogger('main')
 
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.path.join(
     sys.path[0], 'package', 'key', 'photo_tagging_service.json')

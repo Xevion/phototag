@@ -6,11 +6,16 @@ import progressbar
 # Logging and Progressbar work
 progressbar.streams.wrap_stderr()
 logging.basicConfig(level=logging.INFO)
-log = logging.getLogger(__name__)
+log = logging.getLogger('init')
+log.info('Progressbar/Logging ready.')
+
 
 # Path Constants
+# ROOT = ''
 ROOT = sys.path[0]
+# PROCESSING_PATH = ROOT
 PROCESSING_PATH = os.path.join(ROOT, 'package', 'processing')
+# INPUT_PATH = PROCESSING_PATH
 INPUT_PATH = os.path.join(PROCESSING_PATH, 'input')
 TEMP_PATH = os.path.join(PROCESSING_PATH, 'temp')
 OUTPUT_PATH = os.path.join(PROCESSING_PATH, 'output')

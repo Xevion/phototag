@@ -12,6 +12,7 @@ from google.cloud import vision
 from . import TEMP_PATH, INPUT_PATH, OUTPUT_PATH, RAW_EXTS, LOSSY_EXTS
 from .xmp import XMPParser
 
+log = logging.getLogger('process')
 
 class FileProcessor(object):
     def __init__(self, file_name: str):
@@ -63,21 +64,21 @@ class FileProcessor(object):
             # Performs label detection on the image file
             response = client.label_detection(image=image)
             labels = [label.description for label in response.label_annotations]
-            logging.info('Keywords Identified: {}'.format(', '.join(labels)))
+            log.info('Keywords Identified: {}'.format(', '.join(labels)))
 
             # XMP sidecar file specified, write to it using XML module
             if self.xmp:
-                logging.info('Writing {} tags to output XMP.'.format(len(labels)))
+                log.info('Writing {} tags to output XMP.'.format(len(labels)))
                 parser = XMPParser(self.input_xmp)
                 parser.add_keywords(labels)
                 # Save the new XMP file
-                logging.debug('Saving to new XMP file.')
+                log.debug('Saving to new XMP file.')
                 parser.save(self.output_xmp)
-                logging.debug('Removing old XMP file.')
+                log.debug('Removing old XMP file.')
                 os.remove(self.input_xmp)
             # No XMP file is specified, using IPTC tagging
             else:
-                logging.info('Writing {} tags to image IPTC'.format(len(labels)))
+                log.info('Writing {} tags to image IPTC'.format(len(labels)))
                 info = iptcinfo3.IPTCInfo(os.path.join(INPUT_PATH, self.file_name))
                 info['keywords'].extend(labels)
                 info.save()
