@@ -51,7 +51,7 @@ def run():
 
                 # Alert the user that there are duplicates in the directory and ask whether or not to continue
                 if len(identicals) > 0:
-                    print('Identical files were found in the directory, continue?')
+                    print('Identical files were the directory, continue?')
                     print(',\n\t'.join(identicals))
 
                 xmps = [possible for possible in files

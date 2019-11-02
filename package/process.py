@@ -28,22 +28,22 @@ class FileProcessor(object):
 
     def rawOptimize(self):
         rgb = rawpy.imread(os.path.join(INPUT_PATH, self.file_name))
-        imageio.imsave(temp_file_path, rgb.postprocess())
+        imageio.imsave(self.temp_file_path, rgb.postprocess())
         rgb.close()
 
         # Information on file sizes
-        print("Raw Size: {} {}".format(*_size(os.path.join(INPUT_PATH, self.file_name))), end=' | ')
-        print("Resave Size: {} {}".format(*_size(temp_file_path)), end=' | ')
-        pre = os.path.getsize(temp_file_path)
-        self._optimize(temp_file_path)
-        post = os.path.getsize(temp_file_path)
-        print("Optimized Size: {} {} ({}% savings)".format(*_size(temp_file_path), round((1.0 - (post / pre)) * 100), 2) )
+        print("Raw Size: {} {}".format(*self._size(os.path.join(INPUT_PATH, self.file_name))), end=' | ')
+        print("Resave Size: {} {}".format(*self._size(self.temp_file_path)), end=' | ')
+        pre = os.path.getsize(self.temp_file_path)
+        self._optimize(self.temp_file_path)
+        post = os.path.getsize(self.temp_file_path)
+        print("Optimized Size: {} {} ({}% savings)".format(*self._size(self.temp_file_path), round((1.0 - (post / pre)) * 100), 2) )
     
     def basicOptimize(self):
         pre = os.path.getsize(os.path.join(INPUT_PATH, self.file_name))
-        self._optimize(os.path.join(INPUT_PATH, self.file_name), copy=temp_file_path)
-        post = os.path.getsize(temp_file_path)
-        print("Optimized Size: {} {} ({}% savings)".format(*_size(temp_file_path), round((1.0 - (post / pre)) * 100), 2) )
+        self._optimize(os.path.join(INPUT_PATH, self.file_name), copy=self.temp_file_path)
+        post = os.path.getsize(self.temp_file_path)
+        print("Optimized Size: {} {} ({}% savings)".format(*self._size(self.temp_file_path), round((1.0 - (post / pre)) * 100), 2) )
 
 
     def run(self, client):
@@ -55,7 +55,7 @@ class FileProcessor(object):
                 self.basicOptimize()
 
             # Open the image, read as bytes, convert to types Image
-            image = Image.open(temp_file_path)
+            image = Image.open(self.temp_file_path)
             bytesIO = io.BytesIO()
             image.save(bytesIO, format='jpeg')
             image.close()
