@@ -13,7 +13,7 @@ from . import TEMP_PATH, INPUT_PATH, OUTPUT_PATH
 from .xmp import XMPParser
 
 class FileProcessor(object):
-    def __init__(self, file_name):
+    def __init__(self, file_name : str):
         self.file_name = file_name
         self.base, self.ext = os.path.splitext(self.file_name) # fileNAME and fileEXTENSIOn
         # Path to temporary file that will be optimized for upload to Google
@@ -24,13 +24,13 @@ class FileProcessor(object):
         return self.ext.lower() == 'xmp' 
 
     # Optimizes a file using JPEG thumbnailing and compression.
-    def _optimize(self, file_path, size=(512, 512), quality=85, copy=None):
-        image = Image.open(file_path)
+    def _optimize(self, file : str, size : tuple =(512, 512), quality=85, copy=None):
+        image = Image.open(file)
         image.thumbnail(size, resample=Image.ANTIALIAS)
         if copy:
             image.save(copy, format='jpeg', optimize=True, quality=quality)
         else:
-            image.save(file_path, format='jpeg', optimize=True, quality=quality)
+            image.save(file, format='jpeg', optimize=True, quality=quality)
 
     def optimize(self):
         if self.hasXMP:
@@ -42,7 +42,7 @@ class FileProcessor(object):
         else:
             self._optimize(os.path.join(INPUT_PATH, self.file_name), copy=self.temp_file_path)
 
-    def run(self, client):
+    def run(self, client : vision.ImageAnnotatorClient):
         try:
             if self.hasXMP:
                 self.optimize()
@@ -88,9 +88,3 @@ class FileProcessor(object):
     def _cleanup(self):
         if os.path.exists(self.temp_file_path):
             os.remove(self.temp_file_path)
-
-    # Get the size of the file. Is concerned with filesize type. 1024KiB -> 1MiB
-    def _size(self, file_path):
-        size, type = os.path.getsize(file_path) / 1024, 'KiB'
-        if size >= 1024: size /= 1024; type = 'MiB'
-        return round(size, 2), type

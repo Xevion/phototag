@@ -44,9 +44,10 @@ def run():
                 file = FileProcessor(file)
                 file.run(client)
     except:
+        logging.warning('Removing temporary directory before raising exception.')
         os.rmdir(TEMP_PATH)
         raise
 
     # Remove the directory, we are done here
-    print('Cleaning up temporary directory...')
+    logging.info('Removing temporary directory.')
     os.rmdir(TEMP_PATH)
