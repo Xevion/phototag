@@ -11,14 +11,10 @@ log.info('Progressbar/Logging ready.')
 
 
 # Path Constants
-# ROOT = ''
-ROOT = sys.path[0]
-# PROCESSING_PATH = ROOT
-PROCESSING_PATH = os.path.join(ROOT, 'package', 'processing')
-# INPUT_PATH = PROCESSING_PATH
-INPUT_PATH = os.path.join(PROCESSING_PATH, 'input')
-TEMP_PATH = os.path.join(PROCESSING_PATH, 'temp')
-OUTPUT_PATH = os.path.join(PROCESSING_PATH, 'output')
+ROOT = os.path.dirname(os.path.realpath(__file__))
+INPUT_PATH = ROOT
+TEMP_PATH = os.path.join(ROOT, 'temp')
+OUTPUT_PATH = os.path.join(ROOT, 'output')
 log.info('Path Constants Built.')
 
 # Extension Constants
