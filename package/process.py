@@ -4,6 +4,7 @@ import rawpy
 import imageio
 import io
 import iptcinfo3
+import logging
 from PIL import Image
 from google.cloud.vision import types
 from google.cloud import vision
@@ -12,10 +13,15 @@ from . import TEMP_PATH, INPUT_PATH, OUTPUT_PATH
 from .xmp import XMPParser
 
 class FileProcessor(object):
-    def __init__(self, file_name, xmp_name=None):
-        self.file_name, self.xmp_name = file_name, xmp_name
-        self.base, self.ext = os.path.splitext(self.file_name)
+    def __init__(self, file_name):
+        self.file_name = file_name
+        self.base, self.ext = os.path.splitext(self.file_name) # fileNAME and fileEXTENSIOn
+        # Path to temporary file that will be optimized for upload to Google
         self.temp_file_path = os.path.join(TEMP_PATH, self.base + '.jpeg')
+
+    @property
+    def hasXMP(self):
+        return self.ext.lower() == 'xmp' 
 
     # Optimizes a file using JPEG thumbnailing and compression.
     def _optimize(self, file_path, size=(512, 512), quality=85, copy=None):
@@ -26,28 +32,20 @@ class FileProcessor(object):
         else:
             image.save(file_path, format='jpeg', optimize=True, quality=quality)
 
-    def rawOptimize(self):
-        rgb = rawpy.imread(os.path.join(INPUT_PATH, self.file_name))
-        imageio.imsave(self.temp_file_path, rgb.postprocess())
-        rgb.close()
-
-        # Information on file sizes
-        pre = os.path.getsize(self.temp_file_path)
-        self._optimize(self.temp_file_path)
-        post = os.path.getsize(self.temp_file_path)
-    
-    def basicOptimize(self):
-        pre = os.path.getsize(os.path.join(INPUT_PATH, self.file_name))
-        self._optimize(os.path.join(INPUT_PATH, self.file_name), copy=self.temp_file_path)
-        post = os.path.getsize(self.temp_file_path)
+    def optimize(self):
+        if self.hasXMP:
+            # Long runn
+            rgb = rawpy.imread(os.path.join(INPUT_PATH, self.file_name))
+            imageio.imsave(self.temp_file_path, rgb.postprocess())
+            rgb.close()
+            self._optimize(self.temp_file_path)
+        else:
+            self._optimize(os.path.join(INPUT_PATH, self.file_name), copy=self.temp_file_path)
 
     def run(self, client):
         try:
-            if self.xmp_name:
-                # Process the file into a JPEG
-                self.rawOptimize()
-            else:
-                self.basicOptimize()
+            if self.hasXMP:
+                self.optimize()
 
             # Open the image, read as bytes, convert to types Image
             image = Image.open(self.temp_file_path)
@@ -79,17 +77,16 @@ class FileProcessor(object):
                 # Remove the weird ghsot file created by this iptc read/writer.
                 os.remove(os.path.join(INPUT_PATH, self.file_name + '~'))
             # Copy dry-run
-            shutil.copy2(os.path.join(INPUT_PATH, self.file_name), os.path.join(OUTPUT_PATH, self.file_name))
+            # shutil.copy2(os.path.join(INPUT_PATH, self.file_name), os.path.join(OUTPUT_PATH, self.file_name))
             # os.rename(os.path.join(INPUT_PATH, self.file_name), os.path.join(OUTPUT_PATH, self.file_name))
         except:
             self._cleanup()
             raise
         self._cleanup()
 
-    # Remove the temporary file
+    # Remove the temporary file (if it exists)
     def _cleanup(self):
         if os.path.exists(self.temp_file_path):
-            # Deletes the temporary file
             os.remove(self.temp_file_path)
 
     # Get the size of the file. Is concerned with filesize type. 1024KiB -> 1MiB
