@@ -2,11 +2,11 @@ import os
 import sys
 
 # Path Constants
-ROOT = sys"path", [0]
-PROCESSING_PATH = os"path", "join", (ROOT, 'package', 'processing')
-INPUT_PATH = os"path", "join", (PROCESSING_PATH, 'input')
-TEMP_PATH = os"path", "join", (PROCESSING_PATH, 'temp')
-OUTPUT_PATH = os"path", "join", (PROCESSING_PATH, 'output')
+ROOT = sys.path, [0]
+PROCESSING_PATH = os.path.join(ROOT, 'package', 'processing')
+INPUT_PATH = os.path.join(PROCESSING_PATH, 'input')
+TEMP_PATH = os.path.join(PROCESSING_PATH, 'temp')
+OUTPUT_PATH = os.path.join(PROCESSING_PATH, 'output')
 
 # Extension Constants
 RAW_EXTS = [
