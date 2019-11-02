@@ -5,6 +5,7 @@ from google.cloud import vision
 
 from .process import FileProcessor
 from . import INPUT_PATH, TEMP_PATH, OUTPUT_PATH, PROCESSING_PATH
+from . import RAW_EXTS, LOSSY_EXTS
 
 # Process a single file in these steps:
 # 1) Create a temporary file
@@ -13,7 +14,7 @@ from . import INPUT_PATH, TEMP_PATH, OUTPUT_PATH, PROCESSING_PATH
 # 4) Delete temporary file, move NEF/JPEG and XMP
 
 # Driver code for the package
-def run(client):
+def run():
     # Ensure that 'input' and 'output' directories are created
     if not os.path.exists(INPUT_PATH):
         print('Input directory did not exist, creating and quitting.')
@@ -24,7 +25,7 @@ def run(client):
         print('Output directory did not exist. Creating...')
         os.makedirs(OUTPUT_PATH)
 
-    # Clients
+    # Client
     client = vision.ImageAnnotatorClient()
 
     # Find files we want to process based on if they have a corresponding .XMP
@@ -39,9 +40,9 @@ def run(client):
         # Process files
         for index, file in progressbar.progressbar(list(enumerate(select)), redirect_stdout=True, term_width=110):
             name, ext = os.path.splitext(file)
-            ext = ext.upper()
+            ext = ext.lower().strip('.')
             # Raw files contain their metadata in an XMP file usually
-            if ext in ['.NEF', '.CR2']:
+            if ext in RAW_EXTS:
                 # Get all possible files
                 identicals = [possible for possible in files
                             if possible.startswith(os.path.splitext(file)[0])
@@ -68,10 +69,11 @@ def run(client):
                 else:
                     print('Processing file {}, \'{}\''.format(index + 1, xmps[0]), end=' | ')
                     file = FileProcessor(file, xmps[0])
-            elif ext in BASIC_EXTENSIONS:
+                    file.run(client)
+            elif ext in LOSSY_EXTS:
                 print('Processing file {}, \'{}\''.format(index + 1, file), end=' | ')
-                file = FileProcessor(file, xmps[0])
-
+                file = FileProcessor(file)
+                file.run(client)
     except:
         os.rmdir(TEMP_PATH)
         raise

@@ -17,6 +17,15 @@ class FileProcessor(object):
         self.base, self.ext = os.path.splitext(self.file_name)
         self.temp_file_path = os.path.join(TEMP_PATH, self.base + '.jpeg')
 
+    # Optimizes a file using JPEG thumbnailing and compression.
+    def _optimize(self, file_path, size=(512, 512), quality=85, copy=None):
+        image = Image.open(file_path)
+        image.thumbnail(size, resample=Image.ANTIALIAS)
+        if copy:
+            image.save(copy, format='jpeg', optimize=True, quality=quality)
+        else:
+            image.save(file_path, format='jpeg', optimize=True, quality=quality)
+
     def rawOptimize(self):
         rgb = rawpy.imread(os.path.join(INPUT_PATH, self.file_name))
         imageio.imsave(temp_file_path, rgb.postprocess())
@@ -26,13 +35,13 @@ class FileProcessor(object):
         print("Raw Size: {} {}".format(*_size(os.path.join(INPUT_PATH, self.file_name))), end=' | ')
         print("Resave Size: {} {}".format(*_size(temp_file_path)), end=' | ')
         pre = os.path.getsize(temp_file_path)
-        _optimize(temp_file_path)
+        self._optimize(temp_file_path)
         post = os.path.getsize(temp_file_path)
         print("Optimized Size: {} {} ({}% savings)".format(*_size(temp_file_path), round((1.0 - (post / pre)) * 100), 2) )
     
     def basicOptimize(self):
         pre = os.path.getsize(os.path.join(INPUT_PATH, self.file_name))
-        _optimize(os.path.join(INPUT_PATH, self.file_name), copy=temp_file_path)
+        self._optimize(os.path.join(INPUT_PATH, self.file_name), copy=temp_file_path)
         post = os.path.getsize(temp_file_path)
         print("Optimized Size: {} {} ({}% savings)".format(*_size(temp_file_path), round((1.0 - (post / pre)) * 100), 2) )
 
@@ -68,16 +77,15 @@ class FileProcessor(object):
                 os.remove(os.path.join(INPUT_PATH, self.xmp_name))
             # No XMP file is specified, using IPTC tagging
             else:
-                print('\tWriting {} tags to output {}'.format(len(labels), ext[1:].upper()))
+                print('\tWriting {} tags to output {}'.format(len(labels), self.ext[1:].upper()))
                 info = iptcinfo3.IPTCInfo(os.path.join(INPUT_PATH, self.file_name))
                 info['keywords'].extend(labels)
                 info.save()
                 # Remove the weird ghsot file created by this iptc read/writer.
                 os.remove(os.path.join(INPUT_PATH, self.file_name + '~'))
-
             # Copy dry-run
-            # shutil.copy2(os.path.join(INPUT_PATH, self.file_name), os.path.join(OUTPUT_PATH, self.file_name))
-            os.rename(os.path.join(INPUT_PATH, self.file_name), os.path.join(OUTPUT_PATH, self.file_name))
+            shutil.copy2(os.path.join(INPUT_PATH, self.file_name), os.path.join(OUTPUT_PATH, self.file_name))
+            # os.rename(os.path.join(INPUT_PATH, self.file_name), os.path.join(OUTPUT_PATH, self.file_name))
         except:
             self._cleanup()
             raise
@@ -94,12 +102,3 @@ class FileProcessor(object):
         size, type = os.path.getsize(file_path) / 1024, 'KiB'
         if size >= 1024: size /= 1024; type = 'MiB'
         return round(size, 2), type
-
-    # Optimizes a file using JPEG thumbnailing and compression.
-    def _optimize(self, file_path, size=(512, 512), quality=85, copy=None):
-        image = Image.open(file_path)
-        image.thumbnail(size, resample=Image.ANTIALIAS)
-        if copy:
-            image.save(copy, format='jpeg', optimize=True, quality=quality)
-        else:
-            image.save(file_path, format='jpeg', optimize=True, quality=quality)

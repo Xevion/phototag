@@ -2,7 +2,7 @@ import os
 import sys
 
 # Path Constants
-ROOT = sys.path, [0]
+ROOT = sys.path[0]
 PROCESSING_PATH = os.path.join(ROOT, 'package', 'processing')
 INPUT_PATH = os.path.join(PROCESSING_PATH, 'input')
 TEMP_PATH = os.path.join(PROCESSING_PATH, 'temp')
@@ -19,4 +19,4 @@ RAW_EXTS = [
     "rw2", "rwz", "sr2", "srf", "srw", "tif",
     "x3f",
 ]
-LOSSY_EXTS = ["JPEG", "JPG", "PNG"]
+LOSSY_EXTS = ["jpeg", "jpg", "png"]
