@@ -9,9 +9,8 @@ logging.basicConfig(level=logging.INFO)
 log = logging.getLogger('init')
 log.info('Progressbar/Logging ready.')
 
-
 # Path Constants
-ROOT = os.path.dirname(os.path.realpath(__file__))
+ROOT = os.getcwd()
 INPUT_PATH = ROOT
 TEMP_PATH = os.path.join(ROOT, 'temp')
 OUTPUT_PATH = os.path.join(ROOT, 'output')

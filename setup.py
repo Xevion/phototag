@@ -3,7 +3,17 @@ import os
 import io
 from setuptools import find_packages, setup
 
-DEPENDENCIES = ['Click']
+DEPENDENCIES = [
+    'Click',
+    'rawpy',
+    'imageio',
+    'progressbar2',
+    'iptcinfo3',
+    'google-api-python-client',
+    'google-cloud',
+    'google-cloud-vision',
+    'Pillow'
+]
 EXCLUDE_FROM_PACKAGES = []
 CURDIR = sys.path[0]
 
@@ -25,7 +35,7 @@ setup(
     scripts=[],
     entry_points='''
         [console_scripts]
-        phototag=phototag.phototag:cli
+        phototag=package.cli:cli
     ''',
     zip_safe=False,
     install_requires=DEPENDENCIES,
