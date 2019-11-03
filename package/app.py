@@ -9,6 +9,8 @@ import shutil
 import logging
 
 from google.cloud import vision
+from package import xmp
+from PIL import Image
 
 from .xmp import XMPParser
 from .process import FileProcessor
