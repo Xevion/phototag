@@ -28,7 +28,7 @@ setup(
     description="",
     long_description=README,
     long_description_content_type="text/markdown",
-    url="https://github.com/xevion/photo-tagging",
+    url="https://github.com/xevion/phototag",
     packages=find_packages(exclude=EXCLUDE_FROM_PACKAGES),
     include_package_data=True,
     keywords=[],
