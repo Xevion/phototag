@@ -75,7 +75,12 @@ class FileProcessor(object):
                 parser.add_keywords(labels)
                 # Save the new XMP file
                 log.debug('Moving old XMP to temp XMP')
-                temp_name = self.input_xmp + ''.join(random.choices(list(string.ascii_letters), k=10))
+                # Generate a temporary XMP file name
+                head, tail = os.path.split(self.input_xmp)
+                name, ext = os.path.splitext(tail)
+                name += ''.join(random.choices(list(string.ascii_letters), k=10))
+                temp_name = os.path.join(head, name + ext)
+                # Begin the process of copying stats (happens in an instant)
                 os.rename(self.input_xmp, temp_name)
                 log.debug('Saving new XMP')
                 parser.save(self.input_xmp)
