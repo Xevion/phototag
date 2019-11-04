@@ -38,9 +38,25 @@ The command used to access this program is `phototag run`, which would process a
         * Full support for NEF only, it is assumed but not tested whether or not CR2 and other formats will behave the same.
         * Requires a existing XMP file to be available
 
+## Usage
+
+This repository was not originally, and may never be, built to serve users directly. If you have any issues, feel free to submit a issue and I'll see what I can do (no promises!).
+
+To use, first, use `git clone <url>` to download the repository. Then install with `pip install .` inside the `phototag` directory.
+
+If all went well, all requirements will be installed and you should be able to use `phototag` freely across any *new* terminals.
+
+At this point, you're required to setup a account with Google for their Vision API to get a single function: Label Detection.
+
+Use `phototag auth [file]` to copy/move the credentials file to the package config directory.
+
+At this point, you should be able to fully take adantage of the module's capabilities by entering `phototag run` inside of directories you want to automatically label.
+
+Once you're done, you can use `pip uninstall phototag` to remove the directory.
+
 ## To-do
 
-* Implement async or parallel processing
+* Implement async or parallel processing to conver & tag photos faster or in batches
     * Move to more precise logging system
 * Test with different RAW file formats
     * Stress test use with Adobe sidecar files
