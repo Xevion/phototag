@@ -3,6 +3,8 @@ import sys
 import logging
 import progressbar
 
+from . import config
+
 # Logging and Progressbar work
 progressbar.streams.wrap_stderr()
 logging.basicConfig(level=logging.INFO)
@@ -12,9 +14,13 @@ log.info('Progressbar/Logging ready.')
 # Path Constants
 ROOT = os.getcwd()
 INPUT_PATH = ROOT
+SCRIPT_ROOT = os.path.dirname(os.path.realpath(__file__))
 TEMP_PATH = os.path.join(ROOT, 'temp')
 OUTPUT_PATH = os.path.join(ROOT, 'output')
 log.info('Path Constants Built.')
+
+# Enviroment Variables
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = os.path.join(SCRIPT_ROOT, 'config', config.config['google']['credentials'])
 
 # Extension Constants
 RAW_EXTS = [
