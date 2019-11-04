@@ -38,8 +38,12 @@ The command used to access this program is `phototag run`, which would process a
         * Full support for NEF only, it is assumed but not tested whether or not CR2 and other formats will behave the same.
         * Requires a existing XMP file to be available
 
-## Creation
+## To-do
 
-I've typed up a file with everything I've learned about XMP files, Adobe, and just how complex this problem really was for me.
-
-[./LEARNING.md](./LEARNING.md)
+* Implement async or parallel processing
+    * Move to more precise logging system
+* Test with different RAW file formats
+    * Stress test use with Adobe sidecar files
+* Make more robust configuration file system
+    * Integration with click CLI
+* Better, to-the-point logging
