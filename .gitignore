@@ -1,5 +1,5 @@
 # Custom .gitignore stuff
-phototag/config/
+phototag/config/*.json
 *.jpg
 *.png
 *.jpeg
