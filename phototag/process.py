@@ -5,6 +5,9 @@ import imageio
 import io
 import iptcinfo3
 import logging
+import string
+import random
+import shutil
 from PIL import Image
 from google.cloud.vision import types
 from google.cloud import vision
@@ -26,7 +29,6 @@ class FileProcessor(object):
         if self.ext.lower() in RAW_EXTS:
             self.xmp = self.base + '.xmp'
             self.input_xmp = os.path.join(INPUT_PATH, self.xmp)
-            self.output_xmp = os.path.join(OUTPUT_PATH, self.xmp)
             if not os.path.exists(self.input_xmp):
                 raise Exception('Sidecar file for \'{}\' does not exist.'.format(self.xmp))
 
@@ -72,10 +74,15 @@ class FileProcessor(object):
                 parser = XMPParser(self.input_xmp)
                 parser.add_keywords(labels)
                 # Save the new XMP file
-                log.debug('Saving to new XMP file.')
-                parser.save(self.output_xmp)
-                log.debug('Removing old XMP file.')
-                os.remove(self.input_xmp)
+                log.debug('Moving old XMP to temp XMP')
+                temp_name = self.input_xmp + ''.join(random.choices(list(string.ascii_letters), k=10))
+                os.rename(self.input_xmp, temp_name)
+                log.debug('Saving new XMP')
+                parser.save(self.input_xmp)
+                log.debug('Copying old stats to new XMP')
+                shutil.copystat(temp_name, self.input_xmp)
+                log.debug('Removing temp file')
+                os.remove(temp_name)
             # No XMP file is specified, using IPTC tagging
             else:
                 log.info('Writing {} tags to image IPTC'.format(len(labels)))
@@ -87,7 +94,7 @@ class FileProcessor(object):
             
             # Copy dry-run
             # shutil.copy2(os.path.join(INPUT_PATH, self.file_name), os.path.join(OUTPUT_PATH, self.file_name))
-            os.rename(os.path.join(INPUT_PATH, self.file_name), os.path.join(OUTPUT_PATH, self.file_name))
+            # os.rename(os.path.join(INPUT_PATH, self.file_name), os.path.join(OUTPUT_PATH, self.file_name))
         except:
             self._cleanup()
             raise

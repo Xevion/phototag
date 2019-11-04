@@ -35,9 +35,6 @@ def run():
     if not os.path.exists(TEMP_PATH):
         log.info('Creating temporary processing directory')
         os.makedirs(TEMP_PATH)
-    if not os.path.exists(OUTPUT_PATH):
-        log.info('Creating output processing directory')
-        os.makedirs(OUTPUT_PATH)
     
     try:
         # Process files
