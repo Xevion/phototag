@@ -78,7 +78,7 @@ class FileProcessor(object):
                 # Generate a temporary XMP file name
                 head, tail = os.path.split(self.input_xmp)
                 name, ext = os.path.splitext(tail)
-                name += ''.join(random.choices(list(string.ascii_letters), k=10))
+                name += ' temp'
                 temp_name = os.path.join(head, name + ext)
                 # Begin the process of copying stats (happens in an instant)
                 os.rename(self.input_xmp, temp_name)
