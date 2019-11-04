@@ -52,7 +52,7 @@ Use `phototag auth [file]` to copy/move the credentials file to the package conf
 
 At this point, you should be able to fully take adantage of the module's capabilities by entering `phototag run` inside of directories you want to automatically label.
 
-Once you're done, you can use `pip uninstall phototag` to remove the directory.
+Once you're done, you can use `pip uninstall phototag` to remove the package.
 
 ## To-do
 
