@@ -35,7 +35,7 @@ setup(
     scripts=[],
     entry_points='''
         [console_scripts]
-        phototag=package.cli:cli
+        phototag=phototag.cli:cli
     ''',
     zip_safe=False,
     install_requires=DEPENDENCIES,
