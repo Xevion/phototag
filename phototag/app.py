@@ -27,6 +27,9 @@ def run():
     files = os.listdir(INPUT_PATH)
     select = [file for file in files if os.path.splitext(file)[1][1:].lower() in (RAW_EXTS + LOSSY_EXTS)]
     log.info(f'Found {len(select)} valid files')
+    if len(select) <= 0:
+        log.fatal('No vald files found, exiting early')
+        return
 
     # Create the 'temp' directory
     if not os.path.exists(TEMP_PATH):
