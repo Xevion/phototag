@@ -43,7 +43,7 @@ class FileProcessor(object):
 
     def optimize(self):
         if self.xmp:
-            # Long runn
+            # CPU-Bound task, needs threading or async applied
             rgb = rawpy.imread(os.path.join(INPUT_PATH, self.file_name))
             imageio.imsave(self.temp_file_path, rgb.postprocess())
             rgb.close()
