@@ -7,8 +7,8 @@ from . import config
 
 # Logging and Progressbar work
 progressbar.streams.wrap_stderr()
-logging.basicConfig(level=logging.INFO)
 log = logging.getLogger('init')
+log.setLevel(logging.INFO)
 log.info('Progressbar/Logging ready.')
 
 # Path Constants

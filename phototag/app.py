@@ -8,6 +8,7 @@ import progressbar
 import shutil
 import logging
 
+from threading import Thread    
 from google.cloud import vision
 from package import xmp
 from PIL import Image
@@ -35,16 +36,22 @@ def run():
     if not os.path.exists(TEMP_PATH):
         log.info('Creating temporary processing directory')
         os.makedirs(TEMP_PATH)
-    
+
     try:
-        # Process files
-        for index, file in progressbar.progressbar(list(enumerate(select)), redirect_stdout=True, term_width=110):
-            _, ext = os.path.splitext(file)
-            ext = ext[1:].lower()
-            if ext in LOSSY_EXTS or ext in RAW_EXTS:
-                process = FileProcessor(file)
-                log.info(f"Processing file '{file}'...")
-                process.run(client)
+        # Process files via Threading
+        processors = [FileProcessor(file) for file in select]
+        threads = [
+            Thread(target=process.run, args=(client,)) for process in processors
+        ]
+        # Start
+        for i, thread in enumerate(threads):
+            log.info(f"Processing file '{processors[i].file_name}'...")
+            thread.start()
+        # Wait
+        for thread in threads:
+            thread.join()
+        # for process in progressbar.progressbar(processors, redirect_stdout=True, term_width=110):
+            
     except Exception as error:
         log.error(str(error))
         log.warning(
