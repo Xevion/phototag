@@ -1,6 +1,5 @@
 IPTCInfo3==2.1.4
 imageio==2.6.1
-numpy>=1.17
 rawpy==0.13.1
 setuptools==40.8.0
 Click==7.0
