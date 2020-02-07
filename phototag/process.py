@@ -100,7 +100,7 @@ class FileProcessor(object):
                 info = iptcinfo3.IPTCInfo(os.path.join(INPUT_PATH, self.file_name))
                 info["keywords"].extend(labels)
                 info.save()
-                # Remove the weird ghsot file created by this iptc read/writer.
+                # Remove the weird ghost file created by this iptc read/writer.
                 os.remove(os.path.join(INPUT_PATH, self.file_name + "~"))
 
             # Copy dry-run

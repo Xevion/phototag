@@ -17,7 +17,7 @@ The basic process for each photo be tagged is as follows
 4. Open and send the file to Google using the Vision API with `google_cloud.vision`
 5. Compile and save the image's labels from Google
     a. JPEGs use the `iptcinfo3` module to save
-    b. RAW files use a messy implemetation of the `xml` module to read and write tags (experimental) from and to the XMP Sidecar file used by Adobe
+    b. RAW files use a messy implementation of the `xml` module to read and write tags (experimental) from and to the XMP Sidecar file used by Adobe
 6. Delete the temporary (optimized) file and move the original image to the output folder.
 
 The command used to access this program is `phototag run`, which would process and label all eligible images in the working directory.
@@ -56,7 +56,7 @@ Once you're done, you can use `pip uninstall phototag` to remove the package.
 
 ## To-do
 
-* Implement async or parallel processing to conver & tag photos faster or in batches
+* Implement async or (proper) parallel processing to convert & tag photos faster or in batches
     * Move to more precise logging system
 * Test with different RAW file formats
     * Stress test use with Adobe sidecar files
