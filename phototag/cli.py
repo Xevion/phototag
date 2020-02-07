@@ -35,9 +35,9 @@ def run():
 def auth(path, move):
     if not os.path.isabs(path):
         path = os.path.abspath(path)
-    # Verify that the file eixsts
+    # Verify that the file exists
     if os.path.isfile(path):
-        log.info("Specifed path is file and exists")
+        log.info("Specified path is file and exists")
     else:
         if os.path.isdir(path):
             log.warning("Specified path is directory, not file!")

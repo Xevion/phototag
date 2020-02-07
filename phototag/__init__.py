@@ -19,7 +19,7 @@ TEMP_PATH = os.path.join(ROOT, "temp")
 OUTPUT_PATH = os.path.join(ROOT, "output")
 log.info("Path Constants Built.")
 
-# Enviroment Variables
+# Environment Variables
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.path.join(
     SCRIPT_ROOT, "config", config.config["google"]["credentials"]
 )

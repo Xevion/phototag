@@ -34,7 +34,7 @@ def run():
     ]
     log.info(f"Found {len(select)} valid files")
     if len(select) <= 0:
-        log.fatal("No vald files found, exiting early")
+        log.fatal("No valid files found, exiting early")
         return
 
     # Create the 'temp' directory
