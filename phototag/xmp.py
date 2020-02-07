@@ -2,17 +2,18 @@ import xml.etree.ElementTree as ET
 import pprint as pp
 import random, string
 
-rnd = lambda length=10 : ''.join(random.choices(list(string.ascii_letters), k=length))
-toText = lambda items : list(map(lambda item : item.text, items))
+rnd = lambda length=10: "".join(random.choices(list(string.ascii_letters), k=length))
+toText = lambda items: list(map(lambda item: item.text, items))
 
 # Constant Namespace Types
-RDF = '{http://www.w3.org/1999/02/22-rdf-syntax-ns#}RDF'
-SUBJECT = '{http://purl.org/dc/elements/1.1/}subject'
-DESCRIPTION = '{http://www.w3.org/1999/02/22-rdf-syntax-ns#}Description'
-DESCRIPTION_LOWER = '{http://purl.org/dc/elements/1.1/}description'
-ALT = '{http://www.w3.org/1999/02/22-rdf-syntax-ns#}Alt'
-LI = '{http://www.w3.org/1999/02/22-rdf-syntax-ns#}li'
-BAG = '{http://www.w3.org/1999/02/22-rdf-syntax-ns#}Bag'
+RDF = "{http://www.w3.org/1999/02/22-rdf-syntax-ns#}RDF"
+SUBJECT = "{http://purl.org/dc/elements/1.1/}subject"
+DESCRIPTION = "{http://www.w3.org/1999/02/22-rdf-syntax-ns#}Description"
+DESCRIPTION_LOWER = "{http://purl.org/dc/elements/1.1/}description"
+ALT = "{http://www.w3.org/1999/02/22-rdf-syntax-ns#}Alt"
+LI = "{http://www.w3.org/1999/02/22-rdf-syntax-ns#}li"
+BAG = "{http://www.w3.org/1999/02/22-rdf-syntax-ns#}Bag"
+
 
 class XMPParser(object):
     def __init__(self, path):
@@ -29,7 +30,7 @@ class XMPParser(object):
         # if self.description:
         #     self.description = self.description.find(ALT)
         #     self.description = self.description.find(LI)
-    
+
         # Keyword Tag
         self._ready_keywords()
         self.keywords = self.root.find(SUBJECT)
@@ -47,7 +48,7 @@ class XMPParser(object):
             subject = ET.Element(SUBJECT)
             subject.append(ET.Element(BAG))
             self.root.append(subject)
-    
+
     def save(self, outpath=None):
         self.xmp.write(outpath or self.path)
 

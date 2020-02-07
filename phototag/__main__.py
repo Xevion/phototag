@@ -14,7 +14,7 @@ from . import INPUT_PATH, OUTPUT_PATH
 #     logging.info('Output directory did not exist. Creating...')
 #     os.makedirs(OUTPUT_PATH)
 
-log = logging.getLogger('main')
+log = logging.getLogger("main")
 
 if __name__ == "__main__":
     main()
