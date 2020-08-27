@@ -1,3 +1,9 @@
+"""
+app.py
+
+Main app function file for running the program, delegating the tagging operations to different threads.
+"""
+
 import logging
 import os
 from threading import Thread

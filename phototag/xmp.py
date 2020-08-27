@@ -1,3 +1,9 @@
+"""
+xmp.py
+
+Holds a helper class for working with .xmp files and adding keywords to the file.
+"""
+
 import xml.etree.ElementTree as ET
 
 # Constant Namespace Types

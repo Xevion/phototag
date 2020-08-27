@@ -1,3 +1,9 @@
+"""
+process.py
+
+Holds the FileProcessor object, used for working with images in order to label and edit/tag their metadata.
+"""
+
 import io
 import logging
 import os
@@ -120,6 +126,7 @@ class FileProcessor(object):
                 info = iptcinfo3.IPTCInfo(os.path.join(INPUT_PATH, self.file_name))
                 info["keywords"].extend(labels)
                 info.save()
+
                 # Remove the weird ghost file created by this iptc read/writer.
                 os.remove(os.path.join(INPUT_PATH, self.file_name + "~"))
 
