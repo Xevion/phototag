@@ -17,7 +17,10 @@ log = logging.getLogger("process")
 
 
 class FileProcessor(object):
-    """A FileProcessor object is for tagging """
+    """
+    A FileProcessor object shadows a given file, providing methods for optimizing, labeling
+    and tagging Raw (.NEF, .CR2) and Lossy (.JPEG, .PNG) format pictures.
+    """
 
     def __init__(self, file_name: str):
         """
@@ -95,24 +98,22 @@ class FileProcessor(object):
 
             # XMP sidecar file specified, write to it using XML module
             if self.xmp:
-                log.info("Writing {} tags to output XMP.".format(len(labels)))
+                log.info(f"Writing {len(labels)} tags to output XMP.")
                 parser = XMPParser(self.input_xmp)
                 parser.add_keywords(labels)
-                # Save the new XMP file
-                log.debug("Moving old XMP to temp XMP")
+
                 # Generate a temporary XMP file name
                 head, tail = os.path.split(self.input_xmp)
                 name, ext = os.path.splitext(tail)
-                name += " temp"
-                temp_name = os.path.join(head, name + ext)
-                # Begin the process of copying stats (happens in an instant)
-                os.rename(self.input_xmp, temp_name)
-                log.debug("Saving new XMP")
-                parser.save(self.input_xmp)
-                log.debug("Copying old stats to new XMP")
-                shutil.copystat(temp_name, self.input_xmp)
-                log.debug("Removing temp file")
-                os.remove(temp_name)
+                temp_name = os.path.join(head, f'{name} temp{ext}')
+
+                # Finish up processing XMP file
+                os.rename(self.input_xmp, temp_name)  # rename the original file
+                parser.save(self.input_xmp)  # save the new file
+                shutil.copystat(temp_name, self.input_xmp)  # copy file metadata over
+                os.remove(temp_name)  # remove the renamed original file
+                log.debug("New XMP file saved with original file metadata. Old XMP file removed.")
+
             # No XMP file is specified, using IPTC tagging
             else:
                 log.info("Writing {} tags to image IPTC".format(len(labels)))
@@ -130,7 +131,9 @@ class FileProcessor(object):
             raise
         self._cleanup()
 
-    # Remove the temporary file (if it exists)
-    def _cleanup(self):
+    def _cleanup(self) -> None:
+        """
+        Cleanup function. Removes the temporary file generated.
+        """
         if os.path.exists(self.temp_file_path):
             os.remove(self.temp_file_path)
