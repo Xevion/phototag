@@ -29,4 +29,4 @@ os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.path.join(SCRIPT_ROOT, "config
 RAW_EXTS = ["3fr", "ari", "arw", "bay", "braw", "crw", "cr2", "cr3", "cap", "data", "dcs", "dcr", "dng", "drf", "eip",
             "erf", "fff", "gpr", "iiq", "k25", "kdc", "mdc", "mef", "mos", "mrw", "nef", "nrw", "obm", "orf", "pef",
             "ptx", "pxn", "r3d", "raf", "raw", "rwl", "rw2", "rwz", "sr2", "srf", "srw", "tif", "x3f", ]
-LOSSY_EXTS = ["jpeg", "jpg", "png"]
+LOSSY_EXTS = ["jpeg", "jpg", "jpe", "png"]
