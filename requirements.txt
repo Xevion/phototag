@@ -3,7 +3,7 @@ imageio==2.6.1
 rawpy==0.13.1
 setuptools==40.8.0
 Click==7.0
-Pillow==7.0.0
+Pillow>=7.1.0
 protobuf==3.11.3
 progressbar2==3.47.0
 google-cloud-vision~=2.0
