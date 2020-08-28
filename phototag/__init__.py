@@ -1,6 +1,6 @@
-import os
-import sys
 import logging
+import os
+
 import progressbar
 
 from . import config

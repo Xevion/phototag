@@ -1,6 +1,5 @@
-import os
-import sys
 import configparser
+import os
 
 SCRIPT_ROOT = os.path.dirname(os.path.realpath(__file__))
 CONFIG_DIR = os.path.join(SCRIPT_ROOT, "config")

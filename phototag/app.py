@@ -1,22 +1,12 @@
-import io
-import sys
-import os
-import time
-import rawpy
-import imageio
-import progressbar
-import shutil
 import logging
-
+import os
 from threading import Thread
-from google.cloud import vision
-from package import xmp
-from PIL import Image
 
-from .xmp import XMPParser
-from .process import FileProcessor
-from . import INPUT_PATH, TEMP_PATH, OUTPUT_PATH
+from google.cloud import vision
+
+from . import INPUT_PATH, TEMP_PATH
 from . import RAW_EXTS, LOSSY_EXTS
+from .process import FileProcessor
 
 log = logging.getLogger("app")
 

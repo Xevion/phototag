@@ -1,8 +1,8 @@
 import logging
-import click
-import shutil
-import sys
 import os
+import shutil
+
+import click
 
 from . import config
 

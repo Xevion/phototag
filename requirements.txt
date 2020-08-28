@@ -6,3 +6,4 @@ Click==7.0
 Pillow==7.0.0
 protobuf==3.11.3
 progressbar2==3.47.0
+google-cloud-vision~=2.0

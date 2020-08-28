@@ -1,18 +1,15 @@
-import os
-import sys
-import rawpy
-import imageio
 import io
-import iptcinfo3
 import logging
-import string
-import random
+import os
 import shutil
+
+import imageio
+import iptcinfo3
+import rawpy
 from PIL import Image
-from google.cloud.vision import types
 from google.cloud import vision
 
-from . import TEMP_PATH, INPUT_PATH, OUTPUT_PATH, RAW_EXTS, LOSSY_EXTS
+from . import TEMP_PATH, INPUT_PATH, RAW_EXTS
 from .xmp import XMPParser
 
 log = logging.getLogger("process")
@@ -36,9 +33,7 @@ class FileProcessor(object):
                 )
 
     # Optimizes a file using JPEG thumbnailing and compression.
-    def _optimize(
-        self, file: str, size: tuple = (512, 512), quality: int = 85, copy: str = None
-    ):
+    def _optimize(self, file: str, size: tuple = (512, 512), quality: int = 85, copy: str = None):
         image = Image.open(file)
         image.thumbnail(size, resample=Image.ANTIALIAS)
         if copy:
