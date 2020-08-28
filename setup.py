@@ -18,6 +18,7 @@ DEPENDENCIES = [
     "google-cloud",
     "google-cloud-vision",
     "Pillow",
+    "colored-traceback"
 ]
 EXCLUDE_FROM_PACKAGES = []
 CURDIR = sys.path[0]

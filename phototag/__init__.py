@@ -10,8 +10,12 @@ import os
 
 from . import config
 
-log = logging.getLogger("init")
-log.setLevel(logging.INFO)
+logging.basicConfig(
+    format='[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s',
+    level=logging.ERROR
+)
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
 
 # Path Constants
 ROOT = os.getcwd()
@@ -19,7 +23,7 @@ INPUT_PATH = ROOT
 SCRIPT_ROOT = os.path.dirname(os.path.realpath(__file__))
 TEMP_PATH = os.path.join(ROOT, "temp")
 OUTPUT_PATH = os.path.join(ROOT, "output")
-log.info("Path constants built successfully...")
+logger.info("Path constants built successfully...")
 
 # Environment Variables
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.path.join(SCRIPT_ROOT, "config",

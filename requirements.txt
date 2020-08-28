@@ -7,3 +7,4 @@ Pillow>=7.1.0
 protobuf==3.11.3
 google-cloud-vision~=2.0
 google-api-python-client~=1.12.3
+colored-traceback~=0.3.0
