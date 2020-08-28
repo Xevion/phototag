@@ -65,12 +65,12 @@ def get_temp_directory(directory: str, start: str = "temp", append_random: int =
     return temp
 
 
-def convert_to_bytes(display_size: str) -> int:
+def convert_to_bytes(size_string: str) -> int:
     """
     Converts the string representation of data into it's integer byte equivalent.
 
-    :param display_size: A string representation of data size, a integer followed by 1-2 letters indicating unit.
+    :param size_string: A string representation of data size, a integer followed by 1-2 letters indicating unit.
     :return: The number of bytes the given string is equivalent to.
     """
-    match = re.match(r"(\d+)\s*(\w{1,2})", display_size)
+    match = re.match(r"(\d+)\s*(\w{1,2})", size_string)
     return int(match.group(1)) * byte_magnitudes[match.group(2)]
