@@ -72,5 +72,5 @@ def convert_to_bytes(display_size: str) -> int:
     :param display_size: A string representation of data size, a integer followed by 1-2 letters indicating unit.
     :return: The number of bytes the given string is equivalent to.
     """
-    match = re.match(r"(\d+) (\w{1,2})", display_size)
+    match = re.match(r"(\d+)\s*(\w{1,2})", display_size)
     return int(match.group(1)) * byte_magnitudes[match.group(2)]

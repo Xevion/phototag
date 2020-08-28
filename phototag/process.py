@@ -8,6 +8,7 @@ import io
 import logging
 import os
 import shutil
+from threading import Thread
 from typing import Tuple, AnyStr, Optional, List, Dict
 
 import imageio
@@ -17,6 +18,7 @@ from PIL import Image
 from google.cloud import vision
 
 from . import TEMP_PATH, INPUT_PATH, RAW_EXTS
+from .config import config
 from .xmp import XMPParser
 
 log = logging.getLogger("process")
@@ -40,8 +42,16 @@ class MasterFileProcessor(object):
         self.buffer_size, self.single_override = buffer_size, single_override
 
         self.waiting: Dict[int, FileProcessor] = {}  # FileProcessors that are ready to process, but are not.
-        self.running: Dict[int, FileProcessor] = {}  # FileProcessors that are currently being processed in threads.
+        self.running: Dict[int, Tuple[FileProcessor, Thread]] = {}  #  FileProcessors that are currently being processed in threads.
         self.finished: Dict[int, FileProcessor] = {}  # FileProcessors that have finished processing.
+
+        processors = [FileProcessor(file) for file in files]
+        processors.sort(key=lambda fp: fp.size)
+
+        for index, fp in enumerate(processors):
+            self.waiting[index] = fp
+
+        self._precheck()
 
     def _precheck(self) -> None:
         """
@@ -49,10 +59,22 @@ class MasterFileProcessor(object):
 
         :except Exception: when the current configuration will be unable to complete based on the current parameters.
         """
+        # single_override ensures that the application will always complete, even if slowly, one-by-one
+        if not self.single_override:
+            # Check that all files are under the set buffer limit
+            for key, fp in self.waiting.keys():
+                if fp.size > self.buffer_size:
+                    raise Exception("Invalid Configuration - the buffer size is too low. Please raise the buffer size "
+                                    "or enable single_override.")
+
+            # Check that image_count is at least 1
+            if self.image_count <= 0:
+                raise Exception("Invalid Configuration - the image_count is too low. Please set it to a positive "
+                                "non-zero integer or enable single_override.")
 
     def load(self) -> None:
         """
-        Starts FileProcessor threads, loading one or more threads simultaneously based on configuration options.
+        Starts FileProcessor threads, loading zero or more threads simultaneously based on configuration options.
         """
 
     def _finished(self, key: int) -> None:
