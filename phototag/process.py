@@ -2,6 +2,7 @@ import io
 import logging
 import os
 import shutil
+from typing import Tuple, AnyStr, Optional
 
 import imageio
 import iptcinfo3
@@ -16,32 +17,52 @@ log = logging.getLogger("process")
 
 
 class FileProcessor(object):
+    """A FileProcessor object is for tagging """
+
     def __init__(self, file_name: str):
+        """
+        Initializes a FileProcessor object.
+        :param file_name: The file that the FileProcessor object will shadow.
+        """
+
         self.file_name = file_name
         self.base, self.ext = os.path.splitext(self.file_name)
-        self.ext = self.ext[1:]
+        self.ext = self.ext[1:]  # remove the prepended dot
+
         # Path to temporary file that will be optimized for upload to Google
         self.temp_file_path = os.path.join(TEMP_PATH, self.base + ".jpeg")
+
         # Decide whether a XMP file is available
         self.xmp = None
-        if self.ext.lower() in RAW_EXTS:
+        if self.ext.lower() in RAW_EXTS:  # if the extension is in the RAW extensions array, it might have an XMP (?)
             self.xmp = self.base + ".xmp"
             self.input_xmp = os.path.join(INPUT_PATH, self.xmp)
             if not os.path.exists(self.input_xmp):
-                raise Exception(
-                    "Sidecar file for '{}' does not exist.".format(self.xmp)
-                )
+                raise Exception("Sidecar file for '{}' does not exist.".format(self.xmp))
 
-    # Optimizes a file using JPEG thumbnailing and compression.
-    def _optimize(self, file: str, size: tuple = (512, 512), quality: int = 85, copy: str = None):
+    @staticmethod
+    def _optimize(file: AnyStr, size: Tuple[int, int] = (512, 512), quality: int = 85,
+                  copy: Optional[AnyStr] = None) -> None:
+        """
+        A special static method for optimizing a JPEG file using thumbnailing and quality reduction/compression.
+        :param file: The path of the original file you want to optimize.
+        :param size: The width and height of the image you want generated.
+        :param quality: The quality of the file you want generated, from 0 to 100.
+        :param copy:  The path you want to copy the optimized file to. If not specified, the original file will be overwritten.
+        """
         image = Image.open(file)
-        image.thumbnail(size, resample=Image.ANTIALIAS)
+        image.thumbnail(size, resample=Image.ANTIALIAS)  # Thumbnail the image
+
+        # Copy or overwrite the file while optimizing & applying new quality
         if copy:
             image.save(copy, format="jpeg", optimize=True, quality=quality)
         else:
             image.save(file, format="jpeg", optimize=True, quality=quality)
 
-    def optimize(self):
+    def optimize(self) -> None:
+        """
+        Optimize the file shadowed by this object, supporting RAW files as needed.
+        """
         if self.xmp:
             # CPU-Bound task, needs threading or async applied
             rgb = rawpy.imread(os.path.join(INPUT_PATH, self.file_name))
@@ -49,13 +70,16 @@ class FileProcessor(object):
             rgb.close()
             self._optimize(self.temp_file_path)
         else:
-            self._optimize(
-                os.path.join(INPUT_PATH, self.file_name), copy=self.temp_file_path
-            )
+            self._optimize(os.path.join(INPUT_PATH, self.file_name), copy=self.temp_file_path)
 
-    def run(self, client: vision.ImageAnnotatorClient):
+    def run(self, client: vision.ImageAnnotatorClient) -> None:
+        """
+        Optimize, find labels for and tag the file.
+        :param client: The ImageAnnotatorClient to be used for interacting with the Google Vision API.
+        """
+
         try:
-            self.optimize()
+            self.optimize()  # Optimize the file first before sending to the Google Vision API
 
             # Open the image, read as bytes, convert to types Image
             image = Image.open(self.temp_file_path)

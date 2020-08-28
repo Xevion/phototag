@@ -1,9 +1,4 @@
 import xml.etree.ElementTree as ET
-import pprint as pp
-import random, string
-
-rnd = lambda length=10: "".join(random.choices(list(string.ascii_letters), k=length))
-toText = lambda items: list(map(lambda item: item.text, items))
 
 # Constant Namespace Types
 RDF = "{http://www.w3.org/1999/02/22-rdf-syntax-ns#}RDF"
