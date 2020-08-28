@@ -5,11 +5,20 @@ Simple helper functions and constants separated from the primary application fun
 """
 import os
 import random
+import re
 import string
 
 from phototag import LOSSY_EXTS, RAW_EXTS
 
 ALL_EXTENSIONS = RAW_EXTS + LOSSY_EXTS
+
+byte_magnitudes = {
+    "B": 1024 ** 0,
+    "KB": 1024 ** 1,
+    "MB": 1024 ** 2,
+    "GB": 1024 ** 3,
+    "TB": 1024 ** 4
+}
 
 
 def valid_extension(extension: str) -> bool:
@@ -54,3 +63,14 @@ def get_temp_directory(directory: str, start: str = "temp", append_random: int =
             )
         append_random += (3 if append_random == 0 else 1)
     return temp
+
+
+def convert_to_bytes(display_size: str) -> int:
+    """
+    Converts the string representation of data into it's integer byte equivalent.
+
+    :param display_size: A string representation of data size, a integer followed by 1-2 letters indicating unit.
+    :return: The number of bytes the given string is equivalent to.
+    """
+    match = re.match(r"(\d+) (\w{1,2})", display_size)
+    return int(match.group(1)) * byte_magnitudes[match.group(2)]

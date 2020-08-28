@@ -8,7 +8,7 @@ import io
 import logging
 import os
 import shutil
-from typing import Tuple, AnyStr, Optional
+from typing import Tuple, AnyStr, Optional, List, Dict
 
 import imageio
 import iptcinfo3
@@ -22,15 +22,78 @@ from .xmp import XMPParser
 log = logging.getLogger("process")
 
 
+class MasterFileProcessor(object):
+    """
+    Controls FileProcessor objects in the context of threading according to configuration options.
+    """
+
+    def __init__(self, files: List[str], image_count: int, buffer_size: int, single_override: bool):
+        """
+        Initializes a MasterFileProcessor object.
+
+        :param files: The files each FileProcessor object will shadow.
+        :param image_count: The number of files allowed to be running at any time.
+        :param buffer_size: The maximum total size of the files allowed to be loaded/running at any time.
+        :param single_override: If true, the previous configuration values will disregarded in order to keep at least one FileProcessor running.
+        """
+        self.files, self.image_count = files, image_count
+        self.buffer_size, self.single_override = buffer_size, single_override
+
+        self.waiting: Dict[int, FileProcessor] = {}  # FileProcessors that are ready to process, but are not.
+        self.running: Dict[int, FileProcessor] = {}  # FileProcessors that are currently being processed in threads.
+        self.finished: Dict[int, FileProcessor] = {}  # FileProcessors that have finished processing.
+
+    def _precheck(self) -> None:
+        """
+        Checks that the MasterFileProcessor can successfully process all files with the current configuration options.
+
+        :except Exception: when the current configuration will be unable to complete based on the current parameters.
+        """
+
+    def load(self) -> None:
+        """
+        Starts FileProcessor threads, loading one or more threads simultaneously based on configuration options.
+        """
+
+    def _finished(self, key: int) -> None:
+        """
+        Called when a FileProcessor's thread has finished.
+
+        :param int key: The FileProcessor's integer key in the running array.
+        """
+        pass
+
+    @property
+    def total_active(self) -> int:
+        """
+        Returns the number of currently running files.
+
+        :return: a integer describing the number of threads currently processing files.
+        """
+        return len(list(self.running.values()))
+
+    @property
+    def total_size(self) -> int:
+        """
+        Returns the sum of all currently running files in memory, in bytes.
+
+        :return: the total number of bytes the images in the buffer take up on the disk.
+        """
+        return sum(processor.size for processor in self.running.values())
+
+
 class FileProcessor(object):
     """
     A FileProcessor object shadows a given file, providing methods for optimizing, labeling
     and tagging Raw (.NEF, .CR2) and Lossy (.JPEG, .PNG) format pictures.
+
+    Acts as a slave to the MasterFileProcessor, but can be controlled individually.
     """
 
     def __init__(self, file_name: str):
         """
         Initializes a FileProcessor object.
+
         :param file_name: The file that the FileProcessor object will shadow.
         """
 
@@ -54,6 +117,7 @@ class FileProcessor(object):
                   copy: Optional[AnyStr] = None) -> None:
         """
         A special static method for optimizing a JPEG file using thumbnailing and quality reduction/compression.
+
         :param file: The path of the original file you want to optimize.
         :param size: The width and height of the image you want generated.
         :param quality: The quality of the file you want generated, from 0 to 100.
@@ -84,6 +148,7 @@ class FileProcessor(object):
     def run(self, client: vision.ImageAnnotatorClient) -> None:
         """
         Optimize, find labels for and tag the file.
+
         :param client: The ImageAnnotatorClient to be used for interacting with the Google Vision API.
         """
 
@@ -134,9 +199,9 @@ class FileProcessor(object):
             # shutil.copy2(os.path.join(INPUT_PATH, self.file_name), os.path.join(OUTPUT_PATH, self.file_name))
             # os.rename(os.path.join(INPUT_PATH, self.file_name), os.path.join(OUTPUT_PATH, self.file_name))
         except:
-            self._cleanup()
             raise
-        self._cleanup()
+        finally:
+            self._cleanup()
 
     def _cleanup(self) -> None:
         """
@@ -144,3 +209,12 @@ class FileProcessor(object):
         """
         if os.path.exists(self.temp_file_path):
             os.remove(self.temp_file_path)
+
+    @property
+    def size(self) -> int:
+        """
+        Returns the size of the image in bytes that this FileProcessor objet shadows.
+
+        :return: the number of bytes the shadowed image takes up on the disk
+        """
+        return os.path.getsize(self.file_name)
