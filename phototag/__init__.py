@@ -18,8 +18,12 @@ logging.basicConfig(
     level=logging.ERROR,
     handlers=[RichHandler(markup=True, rich_tracebacks=True)]
 )
+
+for loggerName in ['__init__', 'app', 'cli', 'config', 'helpers', 'process', 'xmp']:
+    logger = logging.getLogger(loggerName)
+    logger.setLevel(logging.DEBUG)
+
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 
 # Path Constants
 ROOT = os.getcwd()

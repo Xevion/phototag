@@ -16,8 +16,8 @@ from .helpers import valid_extension, get_extension, convert_to_bytes
 from .process import MasterFileProcessor
 
 logger = logging.getLogger("app")
-logger.setLevel(logging.DEBUG)
 install()
+
 
 def run():
     client = vision.ImageAnnotatorClient()
@@ -43,7 +43,7 @@ def run():
                 BarColumn(bar_width=None),
                 "[progress.percentage]{task.percentage:>3.0f}%",
         ) as progress:
-            mp = MasterFileProcessor(select, 3, convert_to_bytes("1280 KB"), True, client=client, progress=progress)
+            mp = MasterFileProcessor(select, 10, convert_to_bytes("1780 KB"), True, client=client, progress=progress)
             logger.info('MasterFileProcessor created.')
             mp.load()
             logger.info('Finished loading/starting initial threads.')

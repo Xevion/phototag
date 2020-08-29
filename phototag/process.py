@@ -26,7 +26,6 @@ from .helpers import random_characters
 from .xmp import XMPParser
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
 
 
 class MasterFileProcessor(object):
