@@ -14,7 +14,7 @@ from . import config
 
 # noinspection PyArgumentList
 logging.basicConfig(
-    format='%(message)s',
+    format='[bold deep_pink2]%(threadName)s[/bold deep_pink2] %(message)s',
     level=logging.ERROR,
     handlers=[RichHandler(markup=True, rich_tracebacks=True)]
 )

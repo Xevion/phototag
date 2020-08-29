@@ -43,7 +43,7 @@ def run():
                 BarColumn(bar_width=None),
                 "[progress.percentage]{task.percentage:>3.0f}%",
         ) as progress:
-            mp = MasterFileProcessor(select, 3, convert_to_bytes("128 MB"), True, client=client, progress=progress)
+            mp = MasterFileProcessor(select, 3, convert_to_bytes("1280 KB"), True, client=client, progress=progress)
             logger.info('MasterFileProcessor created.')
             mp.load()
             logger.info('Finished loading/starting initial threads.')
