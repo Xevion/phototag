@@ -8,11 +8,15 @@ as well as setting up environment variables for the Google Cloud Vision API.
 import logging
 import os
 
+from rich.logging import RichHandler
+
 from . import config
 
+# noinspection PyArgumentList
 logging.basicConfig(
-    format='[%(asctime)s] [%(name)s] [%(levelname)s] %(message)s',
-    level=logging.ERROR
+    format='%(message)s',
+    level=logging.ERROR,
+    handlers=[RichHandler(markup=True, rich_tracebacks=True)]
 )
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)

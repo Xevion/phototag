@@ -7,8 +7,9 @@ Main app function file for running the program, delegating the tagging operation
 import logging
 import os
 
-import colored_traceback
 from google.cloud import vision
+from rich.progress import Progress, BarColumn
+from rich.traceback import install
 
 from . import INPUT_PATH, TEMP_PATH
 from .helpers import valid_extension, get_extension, convert_to_bytes
@@ -16,9 +17,7 @@ from .process import MasterFileProcessor
 
 logger = logging.getLogger("app")
 logger.setLevel(logging.DEBUG)
-
-colored_traceback.add_hook()
-
+install()
 
 def run():
     client = vision.ImageAnnotatorClient()
@@ -39,12 +38,17 @@ def run():
         os.makedirs(TEMP_PATH)
 
     try:
-        mp = MasterFileProcessor(select, 8, convert_to_bytes("128 MB"), True, client=client)
-        logger.info('MasterFileProcessor created.')
-        mp.load()
-        logger.info('Finished loading/starting initial threads.')
-        mp.join()
-        logger.info('Finished joining threads, now quitting.')
+        with Progress(
+                "[progress.description]{task.description}",
+                BarColumn(bar_width=None),
+                "[progress.percentage]{task.percentage:>3.0f}%",
+        ) as progress:
+            mp = MasterFileProcessor(select, 3, convert_to_bytes("128 MB"), True, client=client, progress=progress)
+            logger.info('MasterFileProcessor created.')
+            mp.load()
+            logger.info('Finished loading/starting initial threads.')
+            mp.join()
+            logger.info('Finished joining threads, now quitting.')
 
     except Exception as error:
         logger.error(str(error))

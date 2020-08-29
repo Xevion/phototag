@@ -18,7 +18,9 @@ DEPENDENCIES = [
     "google-cloud",
     "google-cloud-vision",
     "Pillow",
-    "colored-traceback"
+    "colored-traceback",
+    "ImageHash",
+    "rich"
 ]
 EXCLUDE_FROM_PACKAGES = []
 CURDIR = sys.path[0]

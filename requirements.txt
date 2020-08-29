@@ -8,3 +8,5 @@ protobuf==3.11.3
 google-cloud-vision~=2.0
 google-api-python-client~=1.12.3
 colored-traceback~=0.3.0
+ImageHash~=4.1.0
+rich~=8.0.0
