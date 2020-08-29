@@ -8,8 +8,9 @@ logic for queued threading for dozens of files in parallel.
 import io
 import logging
 import os
+import random
 import shutil
-from pprint import pprint
+import time
 from threading import Thread
 from typing import Tuple, AnyStr, Optional, List, Dict, Callable
 
@@ -18,11 +19,13 @@ import iptcinfo3
 import rawpy
 from PIL import Image
 from google.cloud import vision
+from rich.progress import Progress
 
 from . import TEMP_PATH, INPUT_PATH, RAW_EXTS
+from .helpers import random_characters
 from .xmp import XMPParser
 
-logger = logging.getLogger("process")
+logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
 
@@ -31,7 +34,8 @@ class MasterFileProcessor(object):
     Controls FileProcessor objects in the context of threading according to configuration options.
     """
 
-    def __init__(self, files: List[str], image_count: int, buffer_size: int, single_override: bool, client=None):
+    def __init__(self, files: List[str], image_count: int, buffer_size: int, single_override: bool, client=None,
+                 progress: Progress = None):
         """
         Initializes a MasterFileProcessor object.
 
@@ -47,6 +51,14 @@ class MasterFileProcessor(object):
         self.waiting: Dict[int, FileProcessor] = {}  # FileProcessors that are ready to process, but are not.
         self.running: Dict[int, Tuple[FileProcessor, Thread]] = {}  # FPs that are currently being processed in threads.
         self.finished: Dict[int, FileProcessor] = {}  # FileProcessors that have finished processing.
+
+        self.progress = progress
+        self.tasks = [
+            progress.add_task("[blue]Waiting", total=len(self.files), completed=len(self.files)),
+            progress.add_task("[red]Running", total=len(self.files)),
+            progress.add_task("[green]Finished", total=len(self.files))
+        ] if self.progress else None
+        self.previous_state = [len(self.files), 0, 0]
 
         processors = [FileProcessor(file) for file in files]
         processors.sort(key=lambda fp: fp.size)
@@ -114,12 +126,14 @@ class MasterFileProcessor(object):
 
         :return: the total number of bytes the images in the buffer take up on the disk.
         """
-        return sum(processor.size for processor, thread in self.running.values())
+        return sum(processor.size for processor, thread in list(self.running.values()))
 
     def load(self) -> None:
         """
         Starts FileProcessor threads, loading zero or more threads simultaneously based on configuration options.
         """
+        self._update_tasks()
+
         available: List[int] = list(self.waiting.keys())
         if len(available) == 0:
             return
@@ -138,6 +152,9 @@ class MasterFileProcessor(object):
         if self.single_override and len(available) != 0 and len(self.running) == 0:
             self._start(available.pop(0))
 
+        self._update_tasks()
+
+
     def join(self) -> None:
         """
         Joins running threads continuously until none are left.
@@ -149,6 +166,22 @@ class MasterFileProcessor(object):
 
             if len(self.running) == 0 and len(self.waiting) == 0:
                 break
+
+    def _update_tasks(self) -> None:
+        """
+        If a rich.Progress[bar] was provided, the tasks in it shall be updated accordingly.
+        """
+        # Return immediately if progressbar was not supplied
+        if not self.progress:
+            return
+
+        # Update all tasks
+        self.progress.update(self.tasks[0], advance=(len(self.waiting) - self.previous_state[0]))
+        self.progress.update(self.tasks[1], advance=(len(self.running) - self.previous_state[1]))
+        self.progress.update(self.tasks[2], advance=(len(self.finished) - self.previous_state[2]))
+
+        # Update previous state variable accordingly
+        self.previous_state = [len(self.waiting), len(self.running), len(self.finished)]
 
 
 class FileProcessor(object):
@@ -233,9 +266,13 @@ class FileProcessor(object):
             image = vision.types.Image(content=bytesIO.getvalue())
 
             # Performs label detection on the image file
-            response = client.label_detection(image=image)
-            labels = [label.description for label in response.label_annotations]
-            logger.info("Keywords Identified: {}".format(", ".join(labels)))
+            # response = client.label_detection(image=image)
+            # labels = [label.description for label in response.label_annotations]
+            # time.sleep(random.random())
+            labels = [random_characters(8) for _ in range(random.randint(4, 20))]
+            logger.info("Keywords Identified: {}".format(", ".join(
+                [f'[cyan]{label}[/cyan]' for label in labels]
+            )))
 
             # XMP sidecar file specified, write to it using XML module
             if self.xmp:
