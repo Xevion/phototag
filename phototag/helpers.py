@@ -9,6 +9,7 @@ import re
 import string
 
 from phototag import LOSSY_EXTS, RAW_EXTS
+from phototag.exceptions import PhototagException
 
 ALL_EXTENSIONS = RAW_EXTS + LOSSY_EXTS
 
@@ -58,7 +59,7 @@ def get_temp_directory(directory: str, start: str = "temp", append_random: int =
     while os.path.exists(temp):
         temp = os.path.join(directory, (start + "_" + random_characters(append_random)) if append_random > 0 else start)
         if append_random >= 128:
-            raise Exception(
+            raise PhototagException(
                 "Could not find a valid temporary directory name. Please try again in a different directory."
             )
         append_random += (3 if append_random == 0 else 1)

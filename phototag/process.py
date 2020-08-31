@@ -22,6 +22,7 @@ from google.cloud import vision
 from rich.progress import Progress
 
 from . import TEMP_PATH, INPUT_PATH, RAW_EXTS
+from .exceptions import InvalidConfigurationError, NoSidecarFileError
 from .helpers import random_characters
 from .xmp import XMPParser
 
@@ -84,12 +85,12 @@ class MasterFileProcessor(object):
             # Check that all files are under the set buffer limit
             for key, fp in self.waiting.keys():
                 if fp.size > self.buffer_size:
-                    raise Exception("Invalid Configuration - the buffer size is too low. Please raise the buffer size "
+                    raise InvalidConfigurationError("Invalid Configuration - the buffer size is too low. Please raise the buffer size "
                                     "or enable single_override.")
 
             # Check that image_count is at least 1
             if self.image_count <= 0:
-                raise Exception("Invalid Configuration - the image_count is too low. Please set it to a positive "
+                raise InvalidConfigurationError("Invalid Configuration - the image_count is too low. Please set it to a positive "
                                 "non-zero integer or enable single_override.")
 
     def _start(self, key: int) -> None:
@@ -229,7 +230,7 @@ class FileProcessor(object):
             self.xmp = self.base + ".xmp"
             self.input_xmp = os.path.join(INPUT_PATH, self.xmp)
             if not os.path.exists(self.input_xmp):
-                raise Exception("Sidecar file for '{}' does not exist.".format(self.xmp))
+                raise NoSidecarFileError("Sidecar file for '{}' does not exist.".format(self.xmp))
 
     @staticmethod
     def _optimize(file: AnyStr, size: Tuple[int, int] = (512, 512), quality: int = 85,
@@ -322,7 +323,7 @@ class FileProcessor(object):
             # Copy dry-run
             # shutil.copy2(os.path.join(INPUT_PATH, self.file_name), os.path.join(OUTPUT_PATH, self.file_name))
             # os.rename(os.path.join(INPUT_PATH, self.file_name), os.path.join(OUTPUT_PATH, self.file_name))
-        except:
+        except Exception:
             raise
         finally:
             self._cleanup()
