@@ -23,6 +23,11 @@ class InvalidConfigurationError(UserError):
     pass
 
 
+class EmptyConfigurationValueError(InvalidConfigurationError):
+    """The configuration did not include values required to run the application."""
+    pass
+
+
 class NoSidecarFileError(PhototagException):
     """
     The application is confused as a sidecar file was not found where it was expected.

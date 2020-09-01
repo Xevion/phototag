@@ -6,18 +6,18 @@ The file responsible for providing commandline functionality to the user.
 
 import logging
 import os
-import re
 import shutil
 from typing import Tuple
-from glob import glob
-from rich.traceback import install
+
 import click
+from google.cloud import vision
+from rich.progress import Progress, BarColumn
 
-from . import config, INPUT_PATH
+from . import config, TEMP_PATH
 from .exceptions import InvalidSelectionError
-from .helpers import get_extension, valid_extension
+from .helpers import select_files, convert_to_bytes
+from .process import MasterFileProcessor
 
-# install()
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
@@ -33,44 +33,64 @@ def cli():
 @click.option('-a', '--all', is_flag=True, help='Add all files in the current directory to be tagged.')
 @click.option('-r', '--regex', help='Use RegEx to match files in the current directory')
 @click.option('-g', '--glob', 'glob_pattern', help='Use Glob (UNIX-style file pattern matching) to match files.')
-def run(files: Tuple[str], all: bool = False, regex: str = None, glob_pattern: str = None):
+@click.option('--max-threads', type=int, help='The maximum number of threads that can be running at any point')
+@click.option('--max-buffer-size', 'max_buffer',
+              help='Keep the total size of the files in memory at or below this point')
+@click.option('--forget', is_flag=True, help='Don\'t utilize labels received from the Vision API previously.')
+@click.option('--overwrite', is_flag=True, help='Instead of adding tags, clear and overwrite them')
+@click.option('-d', '--dry-run', is_flag=True, help='Dry-run mode: Don\'t actually write to or modify files.')
+@click.option('-t', '--test', is_flag=True,
+              help='Don\'t actually query the Vision API, just generate fake tags for testing purposes.')
+def run(files: Tuple[str], all: bool = False, regex: str = None, glob_pattern: str = None, max_threads: int = None,
+        max_buffer: str = None, forget: bool = False, overwrite: bool = False, dry_run: bool = False,
+        test: bool = False):
     """
     Run tagging on FILES.
 
     Files can also be selected using --all, --regex and --glob.
+    --max-threads, --max-buffer-size and --forget will inherit their settings from the global config.
     """
-    files = list(files)
-
-    # Just add all files in current working directory
-    if all:
-        files.extend(os.listdir(INPUT_PATH))
+    try:
+        files = select_files(list(files), regex, glob_pattern)
+    except InvalidSelectionError:
+        logger.exception(InvalidSelectionError.__doc__, exc_info=False)
     else:
-        # RegEx option pattern matching
-        if regex:
-            files.extend(
-                filter(lambda filename: re.match(re.compile(regex), filename) is not None, os.listdir(INPUT_PATH))
-            )
+        client = vision.ImageAnnotatorClient()
+        try:
+            # Create the 'temp' directory
+            if not os.path.exists(TEMP_PATH):
+                logger.info("Creating temporary processing directory")
+                os.makedirs(TEMP_PATH)
 
-        # Glob option pattern matching
-        if glob_pattern:
-            files.extend(glob(glob_pattern))
+            with Progress("[progress.description]{task.description}", BarColumn(bar_width=None),
+                          "{task.completed}/{task.total} [progress.percentage]{task.percentage:>3.0f}%") as progress:
+                mp = MasterFileProcessor(files, 10, convert_to_bytes("2 MB"), True, client=client, progress=progress)
+                mp.load()
+                logger.info('Finished loading/starting initial threads.')
+                mp.join()
+                logger.info('Finished joining threads, now quitting.')
+        except Exception as error:
+            logger.exception(str(error))
+        finally:
+            os.rmdir(TEMP_PATH)
+            logger.info("Temporary directory removed.")
 
-    # Format file selection into relative paths, filter down to 'valid' image files
-    files = list(dict.fromkeys(os.path.relpath(file) for file in files))
-    select = list(filter(lambda filename: valid_extension(get_extension(filename)), files))
 
-    if len(select) == 0:
-        if len(files) == 0:
-            raise InvalidSelectionError('No files selected.')
-        else:
-            raise InvalidSelectionError('No valid images selected.')
-    else:
-        logger.debug(f'Found {len(select)} valid images out of {len(files)} files selected.')
+@cli.command('collect')
+@click.argument('files', nargs=-1, type=click.Path(exists=True))
+@click.argument('output', type=click.File(mode="w"), required=False)
+@click.option('--level', default=0.25)
+@click.option('-a', '--all', is_flag=True, help='Add all files in the current directory to be tagged.')
+@click.option('-r', '--regex', help='Use RegEx to match files in the current directory')
+@click.option('-g', '--glob', 'glob_pattern', help='Use Glob (UNIX-style file pattern matching) to match files.')
+def collect(files: Tuple[str], output=None, all: bool = False, regex: str = None, glob: str = None):
+    """
+    Collects tags from selected images for compiling the average tags of an album.
 
-    print(files)
-    # from .app import run
-    #
-    # run()
+    Input is selected with FILES or using --all, --regex and --glob.
+    """
+    files = select_files(list(files), regex, glob)
+    pass
 
 
 @cli.command('auth')

@@ -11,8 +11,9 @@ import os
 from rich.logging import RichHandler
 
 from . import config
-
 # noinspection PyArgumentList
+from .exceptions import EmptyConfigurationValueError, InvalidConfigurationError
+
 logging.basicConfig(
     format='[bold deep_pink2]%(threadName)s[/bold deep_pink2] %(message)s',
     level=logging.ERROR,
@@ -31,11 +32,21 @@ INPUT_PATH = ROOT
 SCRIPT_ROOT = os.path.dirname(os.path.realpath(__file__))
 TEMP_PATH = os.path.join(ROOT, "temp")
 OUTPUT_PATH = os.path.join(ROOT, "output")
+CONFIG_PATH = os.path.join(SCRIPT_ROOT, "config")
 logger.info("Path constants built successfully...")
 
 # Environment Variables
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.path.join(SCRIPT_ROOT, "config",
-                                                            config.config["google"]["credentials"])
+try:
+    if not config.config["google"]["credentials"]:
+        raise EmptyConfigurationValueError(
+            "Please use the configuration command to add a Google API authorization file."
+        )
+except (ValueError, AttributeError):
+    raise InvalidConfigurationError(
+        "The configuration file appears to be damaged. Please fix, delete or replace it with a valid configuration."
+    )
+else:
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.path.join(CONFIG_PATH, config.config["google"]["credentials"])
 
 # Extension Constants
 RAW_EXTS = ["3fr", "ari", "arw", "bay", "braw", "crw", "cr2", "cr3", "cap", "data", "dcs", "dcr", "dng", "drf", "eip",

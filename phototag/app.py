@@ -38,11 +38,8 @@ def run():
         os.makedirs(TEMP_PATH)
 
     try:
-        with Progress(
-                "[progress.description]{task.description}",
-                BarColumn(bar_width=None),
-                "[progress.percentage]{task.percentage:>3.0f}%",
-        ) as progress:
+        with Progress("[progress.description]{task.description}", BarColumn(bar_width=None),
+                      "[progress.percentage]{task.percentage:>3.0f}%") as progress:
             mp = MasterFileProcessor(select, 10, convert_to_bytes("1780 KB"), True, client=client, progress=progress)
             logger.info('MasterFileProcessor created.')
             mp.load()

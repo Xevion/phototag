@@ -3,15 +3,21 @@ helpers.py
 
 Simple helper functions and constants separated from the primary application functionality.
 """
+import logging
 import os
 import random
 import re
 import string
+from glob import glob
+from typing import List, Optional
 
-from phototag import LOSSY_EXTS, RAW_EXTS
-from phototag.exceptions import PhototagException
+from phototag import LOSSY_EXTS, RAW_EXTS, INPUT_PATH
+from phototag.exceptions import PhototagException, InvalidSelectionError
 
 ALL_EXTENSIONS = RAW_EXTS + LOSSY_EXTS
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 byte_magnitudes = {
     "B": 1024 ** 0,
@@ -75,3 +81,43 @@ def convert_to_bytes(size_string: str) -> int:
     """
     match = re.match(r"(\d+)\s*(\w{1,2})", size_string)
     return int(match.group(1)) * byte_magnitudes[match.group(2)]
+
+
+def select_files(files: List[str], regex: Optional[str], glob_pattern: Optional[str]) -> List[str]:
+    """
+    Helper function for selecting files in the CWD (or subdirectories, via Glob) and filtering them.
+    Combines direct file argument selections, RegEx filters and Glob patterns together.
+
+    :param files: Specific files chosen by the user.
+    :param regex: A full RegEx matching pattern
+    :param glob_pattern: A Glob pattern
+    :return: A list of files relative to the CWD
+    """
+    # Just add all files in current working directory
+    if all:
+        files.extend(os.listdir(INPUT_PATH))
+    else:
+        # RegEx option pattern matching
+        if regex:
+            files.extend(
+                filter(lambda filename: re.match(re.compile(regex), filename) is not None, os.listdir(INPUT_PATH))
+            )
+
+        # Glob option pattern matching
+        if glob_pattern:
+            files.extend(glob(glob_pattern))
+
+    # Format file selection into relative paths, filter down to 'valid' image files
+    files = list(dict.fromkeys(os.path.relpath(file) for file in files))
+    select = list(filter(lambda filename: valid_extension(get_extension(filename)), files))
+
+    if len(select) == 0:
+        logger.debug(f'{len(files)} files found, 0 images found.')
+        if len(files) == 0:
+            raise InvalidSelectionError('No files selected.')
+        else:
+            raise InvalidSelectionError('No valid images selected.')
+    else:
+        logger.info(f'Found {len(select)} valid images out of {len(files)} files selected.')
+
+    return files
