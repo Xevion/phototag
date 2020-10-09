@@ -5,5 +5,5 @@ setuptools==40.8.0
 Click==7.0
 Pillow>=7.1.0
 protobuf==3.11.3
-progressbar2==3.47.0
 google-cloud-vision~=2.0
+google-api-python-client~=1.12.3

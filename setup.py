@@ -1,13 +1,18 @@
-import sys
+"""
+setup.py
+
+The installation script responsible for setting up the CLI program on the user's system.
+"""
+
 import os
-import io
+import sys
+
 from setuptools import find_packages, setup
 
 DEPENDENCIES = [
     "Click",
     "rawpy",
     "imageio",
-    "progressbar2",
     "iptcinfo3",
     "google-api-python-client",
     "google-cloud",
