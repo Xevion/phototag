@@ -1,8 +1,14 @@
-# photo-tagging
+<div align="center">
+    <a href="#">
+        <img src="/.media/banner.png" alt="phototag Repository Banner">
+    </a>
+    <br>
+    <sub>
+        Built by Xevion
+    </sub>
+</div>
 
-## What is this repository?
-
-This repository is for a interesting project involving Google's Vision API and support for automatic photo tagging, with support for Adobe's XMP metadata and other file property based metadata.
+Phototag is a personal tool I use to automatically generate and layer tags describing a photo in a fast and easy way. It uses Google's Vision API and supports IPTC metadata and Adobe XMP Sidecar files on Windows.
 
 ## How does it work?
 
