@@ -95,9 +95,9 @@ def collect(files: Tuple[str], output=None, all: bool = False, regex: str = None
 
 @cli.command('auth')
 @click.argument("path", type=click.Path(exists=True))
-@click.option("-m", "--move", default=False, show_default=True, prompt=True,
+@click.option("-m", "--move", default=False, show_default=True, prompt='Move instead of copy?',
               help="Move instead of copying the credentials file", )
-def auth(path, move):
+def auth(path: str, move: bool):
     """
     A utility command for copying the Downloaded Google Vision API Credentials file to the configuration folder.
     """
