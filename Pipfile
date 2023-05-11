@@ -1,0 +1,24 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+iptcinfo3 = "==2.1.4"
+imageio = "==2.6.1"
+rawpy = "*"
+click = "==7.1.2"
+pillow = ">=7.1.0"
+protobuf = "==3.11.3"
+google-cloud-vision = "*"
+google-api-python-client = "*"
+colored-traceback = "~=0.3.0"
+imagehash = "~=4.1.0"
+rich = "~=8.0.0"
+setuptools = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.11"
+python_full_version = "3.11.0"
