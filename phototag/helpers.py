@@ -9,7 +9,7 @@ import random
 import re
 import string
 from glob import glob
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 from phototag import LOSSY_EXTS, RAW_EXTS, CWD
 from phototag.exceptions import PhototagException, InvalidSelectionError
@@ -19,19 +19,40 @@ ALL_EXTENSIONS = RAW_EXTS + LOSSY_EXTS
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
+# kB Kilobyte
+# KB/KiB Kibibyte
+# Kb Kibibit
+# kb Kilobit
+
 byte_magnitudes = {
-    "B": 1024 ** 0,
-    "KB": 1024 ** 1,
-    "MB": 1024 ** 2,
-    "GB": 1024 ** 3,
-    "TB": 1024 ** 4
+    "B": 1,
 }
+
+for magnitude, suffix_kibi in enumerate(["K", "M", "G", "T", "P", "E", "Z", "Y"], start=0):
+    suffix_kilo = suffix_kibi.lower()
+    values: List[Tuple[str, int]] = [
+        # Kibi (1024)
+        (f"{suffix_kibi}B", 1024 ** magnitude),
+        (f"{suffix_kibi}b", 1024 ** magnitude // 8),
+        (f"{suffix_kibi}iB", 1024 ** magnitude),
+        (f"{suffix_kibi}ib", 1024 ** magnitude // 8),
+        # Kilo (1000)
+        (f"{suffix_kilo}B", 1000 ** magnitude),
+        (f"{suffix_kilo}b", 1000 ** magnitude // 8),
+        (f"{suffix_kilo}iB", 1000 ** magnitude),
+        (f"{suffix_kilo}ib", 1000 ** magnitude // 8)
+    ]
+
+    for suffix, scale in values:
+        byte_magnitudes[suffix] = scale
+
+print(byte_magnitudes)
 
 
 def valid_extension(extension: str) -> bool:
     """
     :param extension: The extension you wish to test. Prepended dots are acceptable.
-    :return: A boolean describing the validity of the extension in the context of the phototag application.
+    :return: A boolean describing the validity of the extension in the context of the Phototag application.
     """
     return extension.lstrip('.') in ALL_EXTENSIONS
 
@@ -46,7 +67,7 @@ def get_extension(filename: str) -> str:
 
 def random_characters(length: int) -> str:
     """
-    :param length: A integer describing the intended length of the generated string.
+    :param length: An integer describing the intended length of the generated string.
     :return: A random series of characters *length* characters long.
     """
     return ''.join(random.choices(string.ascii_letters, k=length))
@@ -56,7 +77,7 @@ def get_temp_directory(directory: str, start: str = "temp", append_random: int =
     """
     :param directory: A valid directory where the temporary directory is intended to be created.
     :param start: The string the directory should start with.
-    :param append_random: Whether or not to always include a random series of characters.
+    :param append_random: Whether to always include a random series of characters.
     :return: A valid path to a directory that has not yet been created.
     """
     temp: str = ""
@@ -80,7 +101,7 @@ def convert_to_bytes(size_string: str) -> int:
     :return: The number of bytes the given string is equivalent to.
     """
     match = re.match(r"(\d+)\s*(\w{1,2})", size_string)
-    return int(match.group(1)) * byte_magnitudes.get(match.group(2).upper(), 0)
+    return int(match.group(1)) * byte_magnitudes.get(match.group(2), 0)
 
 
 def select_files(files: List[str], regex: Optional[str], glob_pattern: Optional[str]) -> List[str]:
