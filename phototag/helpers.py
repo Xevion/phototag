@@ -80,7 +80,7 @@ def convert_to_bytes(size_string: str) -> int:
     :return: The number of bytes the given string is equivalent to.
     """
     match = re.match(r"(\d+)\s*(\w{1,2})", size_string)
-    return int(match.group(1)) * byte_magnitudes[match.group(2)]
+    return int(match.group(1)) * byte_magnitudes.get(match.group(2).upper(), 0)
 
 
 def select_files(files: List[str], regex: Optional[str], glob_pattern: Optional[str]) -> List[str]:
