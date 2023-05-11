@@ -18,6 +18,8 @@ rich = "~=8.0.0"
 setuptools = "*"
 
 [dev-packages]
+vistir = "==0.6.1"
+pipenv-setup = {extras = ["black"], version = "*"}
 
 [requires]
 python_version = "3.11"

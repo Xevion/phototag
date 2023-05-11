@@ -1,6 +1,6 @@
 <div align="center">
     <a href="#">
-        <img src="/.media/banner.png" alt="phototag Repository Banner">
+        <img src="./.media/banner.png" alt="phototag Repository Banner">
     </a>
     <br>
     <sub>
@@ -8,25 +8,27 @@
     </sub>
 </div>
 
-Phototag is a personal tool I use to automatically generate and layer tags describing a photo in a fast and easy way. It uses Google's Vision API and supports IPTC metadata and Adobe XMP Sidecar files on Windows.
+Phototag is a personal tool I use to automatically generate and layer tags describing a photo in a fast and easy way. It
+uses Google's Vision API and supports IPTC metadata and Adobe XMP Sidecar files on Windows.
 
 ## How does it work?
 
 This application is built in Python and utilizes the `google-cloud` python module family.
 
-All requirements will be automatically be installed whenever `pip install .` is ran inside the `phototag` directory.
+The basic process for each photo be tagged is as follows
 
-The basic process for each photo be tagged is as follows    
 1. Build relevant paths and identify important information used throughout the process
 2. Save RAW files as JPEG using `rawpy`
 3. Optimize JPEG files using thumbnailing and quality measures
 4. Open and send the file to Google using the Vision API with `google_cloud.vision`
 5. Compile and save the image's labels from Google
-    a. JPEGs use the `iptcinfo3` module to save
-    b. RAW files use a messy implementation of the `xml` module to read and write tags (experimental) from and to the XMP Sidecar file used by Adobe
+    - JPEGs use the `iptcinfo3` module to save
+    - RAW files use a messy implementation of the `xml` module to read and write tags (experimental) from and to the XMP
+      Sidecar file used by Adobe
 6. Delete the temporary (optimized) file and move the original image to the output folder.
 
-The command used to access this program is `phototag run`, which would process and label all eligible images in the working directory.
+The command used to access this program is `phototag run`, which would process and label all eligible images in the
+current working directory.
 
 ## Features
 
@@ -41,22 +43,30 @@ The command used to access this program is `phototag run`, which would process a
 * Support for both JPEG and RAW
     * Store tags in JPEG via IPTC metadata
     * Store tags in RAW files through Adobe's XMP sidecar files
-        * Full support for NEF only, it is assumed but not tested whether or not CR2 and other formats will behave the same.
+        * Full support for NEF only, it is assumed but not tested whether or not CR2 and other formats will behave the
+          same.
         * Requires a existing XMP file to be available
 
 ## Usage
 
-This repository was not originally, and may never be, built to serve users directly. If you have any issues, feel free to submit a issue and I'll see what I can do (no promises!).
 
-To use, first, use `git clone <url>` to download the repository. Then install with `pip install .` inside the `phototag` directory.
+```bash
+pipenv install
+```
 
-If all went well, all requirements will be installed and you should be able to use `phototag` freely across any *new* terminals.
+This repository was not originally, and may never be, built to serve users directly. If you have any issues, feel free
+to submit a issue and I'll see what I can do (no promises!).
 
-At this point, you're required to setup a account with Google for their Vision API to get a single function: Label Detection.
+If all went well, all requirements will be installed and you should be able to use `phototag` freely across any *new*
+terminals.
+
+At this point, you're required to setup a account with Google for their Vision API to get a single function: Label
+Detection.
 
 Use `phototag auth [file]` to copy/move the credentials file to the package config directory.
 
-At this point, you should be able to fully take adantage of the module's capabilities by entering `phototag run` inside of directories you want to automatically label.
+At this point, you should be able to fully take adantage of the module's capabilities by entering `phototag run` inside
+of directories you want to automatically label.
 
 Once you're done, you can use `pip uninstall phototag` to remove the package.
 
