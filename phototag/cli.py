@@ -13,10 +13,10 @@ import click
 from google.cloud import vision
 from rich.progress import Progress, BarColumn
 
-from . import config, TEMP_PATH
-from .exceptions import InvalidSelectionError
-from .helpers import select_files, convert_to_bytes
-from .process import MasterFileProcessor
+from phototag import config, TEMP_PATH
+from phototag.exceptions import InvalidSelectionError
+from phototag.helpers import select_files, convert_to_bytes
+from phototag.process import MasterFileProcessor
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)

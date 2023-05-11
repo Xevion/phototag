@@ -27,26 +27,14 @@ for loggerName in ['__init__', 'app', 'cli', 'config', 'helpers', 'process', 'xm
 logger = logging.getLogger(__name__)
 
 # Path Constants
-ROOT = os.getcwd()
-INPUT_PATH = ROOT
+CWD = os.getcwd()
 SCRIPT_ROOT = os.path.dirname(os.path.realpath(__file__))
-TEMP_PATH = os.path.join(ROOT, "temp")
-OUTPUT_PATH = os.path.join(ROOT, "output")
+TEMP_PATH = os.path.join(CWD, "temp")
+OUTPUT_PATH = os.path.join(CWD, "output")
 CONFIG_PATH = os.path.join(SCRIPT_ROOT, "config")
 logger.info("Path constants built successfully...")
 
-# Environment Variables
-try:
-    if not config.config["google"]["credentials"]:
-        raise EmptyConfigurationValueError(
-            "Please use the configuration command to add a Google API authorization file."
-        )
-except (ValueError, AttributeError):
-    raise InvalidConfigurationError(
-        "The configuration file appears to be damaged. Please fix, delete or replace it with a valid configuration."
-    )
-else:
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.path.join(CONFIG_PATH, config.config["google"]["credentials"])
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.path.join(CONFIG_PATH, config.config["google"]["credentials"])
 
 # Extension Constants
 RAW_EXTS = ["3fr", "ari", "arw", "bay", "braw", "crw", "cr2", "cr3", "cap", "data", "dcs", "dcr", "dng", "drf", "eip",

@@ -11,9 +11,9 @@ from google.cloud import vision
 from rich.progress import Progress, BarColumn
 from rich.traceback import install
 
-from . import INPUT_PATH, TEMP_PATH
-from .helpers import valid_extension, get_extension, convert_to_bytes
-from .process import MasterFileProcessor
+from phototag import CWD, TEMP_PATH
+from phototag.helpers import valid_extension, get_extension, convert_to_bytes
+from phototag.process import MasterFileProcessor
 
 logger = logging.getLogger("app")
 install()
@@ -23,7 +23,7 @@ def run():
     client = vision.ImageAnnotatorClient()
 
     # Locate valid files
-    files = os.listdir(INPUT_PATH)
+    files = os.listdir(CWD)
     select = list(filter(lambda file: valid_extension(get_extension(file)), files))
 
     if len(select) == 0:

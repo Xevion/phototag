@@ -11,7 +11,7 @@ import string
 from glob import glob
 from typing import List, Optional
 
-from phototag import LOSSY_EXTS, RAW_EXTS, INPUT_PATH
+from phototag import LOSSY_EXTS, RAW_EXTS, CWD
 from phototag.exceptions import PhototagException, InvalidSelectionError
 
 ALL_EXTENSIONS = RAW_EXTS + LOSSY_EXTS
@@ -95,12 +95,12 @@ def select_files(files: List[str], regex: Optional[str], glob_pattern: Optional[
     """
     # Just add all files in current working directory
     if all:
-        files.extend(os.listdir(INPUT_PATH))
+        files.extend(os.listdir(CWD))
     else:
         # RegEx option pattern matching
         if regex:
             files.extend(
-                filter(lambda filename: re.match(re.compile(regex), filename) is not None, os.listdir(INPUT_PATH))
+                filter(lambda filename: re.match(re.compile(regex), filename) is not None, os.listdir(CWD))
             )
 
         # Glob option pattern matching

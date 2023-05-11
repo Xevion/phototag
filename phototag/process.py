@@ -21,10 +21,10 @@ from PIL import Image
 from google.cloud import vision
 from rich.progress import Progress
 
-from . import TEMP_PATH, INPUT_PATH, RAW_EXTS
-from .exceptions import InvalidConfigurationError, NoSidecarFileError
-from .helpers import random_characters
-from .xmp import XMPParser
+from phototag import TEMP_PATH, RAW_EXTS, CWD
+from phototag.exceptions import InvalidConfigurationError, NoSidecarFileError
+from phototag.helpers import random_characters
+from phototag.xmp import XMPParser
 
 logger = logging.getLogger(__name__)
 
@@ -85,13 +85,15 @@ class MasterFileProcessor(object):
             # Check that all files are under the set buffer limit
             for key, fp in self.waiting.keys():
                 if fp.size > self.buffer_size:
-                    raise InvalidConfigurationError("Invalid Configuration - the buffer size is too low. Please raise the buffer size "
-                                    "or enable single_override.")
+                    raise InvalidConfigurationError(
+                        "Invalid Configuration - the buffer size is too low. Please raise the buffer size "
+                        "or enable single_override.")
 
             # Check that image_count is at least 1
             if self.image_count <= 0:
-                raise InvalidConfigurationError("Invalid Configuration - the image_count is too low. Please set it to a positive "
-                                "non-zero integer or enable single_override.")
+                raise InvalidConfigurationError(
+                    "Invalid Configuration - the image_count is too low. Please set it to a positive "
+                    "non-zero integer or enable single_override.")
 
     def _start(self, key: int) -> None:
         """
@@ -228,7 +230,7 @@ class FileProcessor(object):
         self.xmp = None
         if self.ext.lower() in RAW_EXTS:  # if the extension is in the RAW extensions array, it might have an XMP (?)
             self.xmp = self.base + ".xmp"
-            self.input_xmp = os.path.join(INPUT_PATH, self.xmp)
+            self.input_xmp = os.path.join(CWD, self.xmp)
             if not os.path.exists(self.input_xmp):
                 raise NoSidecarFileError("Sidecar file for '{}' does not exist.".format(self.xmp))
 
@@ -258,12 +260,12 @@ class FileProcessor(object):
         """
         if self.xmp:
             # CPU-Bound task, needs threading or async applied
-            rgb = rawpy.imread(os.path.join(INPUT_PATH, self.file_name))
+            rgb = rawpy.imread(os.path.join(CWD, self.file_name))
             imageio.imsave(self.temp_file_path, rgb.postprocess())
             rgb.close()
             self._optimize(self.temp_file_path)
         else:
-            self._optimize(os.path.join(INPUT_PATH, self.file_name), copy=self.temp_file_path)
+            self._optimize(os.path.join(CWD, self.file_name), copy=self.temp_file_path)
 
     def run(self, client: vision.ImageAnnotatorClient, callback: Callable = None) -> None:
         """
@@ -313,16 +315,16 @@ class FileProcessor(object):
             # No XMP file is specified, using IPTC tagging
             else:
                 logger.debug(f"Writing {len(labels)} tags to image IPTC")
-                info = iptcinfo3.IPTCInfo(os.path.join(INPUT_PATH, self.file_name))
+                info = iptcinfo3.IPTCInfo(os.path.join(CWD, self.file_name))
                 info["keywords"].extend(labels)
                 info.save()
 
                 # Remove the weird ghost file created by this iptc read/writer.
-                os.remove(os.path.join(INPUT_PATH, self.file_name + "~"))
+                os.remove(os.path.join(CWD, self.file_name + "~"))
 
             # Copy dry-run
-            # shutil.copy2(os.path.join(INPUT_PATH, self.file_name), os.path.join(OUTPUT_PATH, self.file_name))
-            # os.rename(os.path.join(INPUT_PATH, self.file_name), os.path.join(OUTPUT_PATH, self.file_name))
+            # shutil.copy2(os.path.join(CWD, self.file_name), os.path.join(OUTPUT_PATH, self.file_name))
+            # os.rename(os.path.join(CWD, self.file_name), os.path.join(OUTPUT_PATH, self.file_name))
         except Exception:
             raise
         finally:
@@ -343,4 +345,4 @@ class FileProcessor(object):
 
         :return: the number of bytes the shadowed image takes up on the disk
         """
-        return os.path.getsize(os.path.join(INPUT_PATH, self.file_name))
+        return os.path.getsize(os.path.join(CWD, self.file_name))
