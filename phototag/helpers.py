@@ -9,7 +9,8 @@ import random
 import re
 import string
 from glob import glob
-from typing import List, Optional, Tuple
+from pathlib import Path
+from typing import List, Optional, Tuple, Generator
 
 from phototag import LOSSY_EXTS, RAW_EXTS, CWD
 from phototag.exceptions import PhototagException, InvalidSelectionError
@@ -96,6 +97,28 @@ def convert_to_bytes(size_string: str) -> int:
     """
     match = re.match(r"(\d+)\s*(\w{1,2})", size_string)
     return int(match.group(1)) * byte_magnitudes.get(match.group(2), 0)
+
+
+def walk(root: Path, current: Optional[Path] = None, depth: Optional[int] = None) -> Generator[
+    Path, None, None]:
+    """
+    Recursively walk through a directory and yield all files found.
+    """
+    root_abs_depth: int = len(root.parents)
+
+    if depth is not None and depth < 0:
+        depth = None
+
+    for item in (current or root).iterdir():
+        if item.is_file():
+            yield item.resolve()
+        if not item.is_dir():
+            continue
+
+        # Recursive handling
+        cur_depth: int = len(item.resolve().parents) - root_abs_depth - 1
+        if depth is None or cur_depth < depth:
+            yield from walk(root, current=item, depth=depth)
 
 
 def select_files(files: List[str], regex: Optional[str], glob_pattern: Optional[str]) -> List[str]:
