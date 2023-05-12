@@ -11,6 +11,49 @@
 Phototag is a personal tool I use to automatically generate and layer tags describing a photo in a fast and easy way. It
 uses Google's Vision API and supports IPTC metadata and Adobe XMP Sidecar files on Windows.
 
+## Features
+
+* Automatic tagging of photos using Google's Vision API
+    * Cheap, Fast and Accurate
+* Minimal Data Usage
+    * Compresses and thumbnails images before sending to Google
+* Support for both JPEG and RAW
+    * Store tags in JPEG via IPTC metadata
+    * Store tags in RAW files via Adobe's XMP sidecar files
+        * Full support for NEF only, CR2 and more untested
+        * Requires a existing XMP file to be available
+
+## Installation
+
+For basic usage, the project is currently not on PyPi. Until then, clone and install like so:
+
+```bash
+pip install
+```
+
+For development, install all dependencies with `pipenv`:
+
+```bash
+pipenv install
+pip install -e .  # Editable mode to use the folder's current source files
+# You can also install the Phototag package with
+pipenv install -e .
+```
+
+## Usage
+
+```bash
+# Copy the JSON authentication file for Google Vision API access
+phototag auth [file]
+phototag run
+````
+
+## Uninstallation
+
+```bash
+pip uninstall phototag
+```
+
 ## How does it work?
 
 This application is built in Python and utilizes the `google-cloud` python module family.
@@ -29,46 +72,6 @@ The basic process for each photo be tagged is as follows
 
 The command used to access this program is `phototag run`, which would process and label all eligible images in the
 current working directory.
-
-## Features
-
-* Automatic tagging of photos using Google's Vision API
-    * Fast and accurate, it returns specific keywords using Google's very own Labelling model
-    * Can easily be used yourself if you sign up
-        * Super cheap and easy to setup
-
-* Automatic compression of photos for minimal data usage on both your and Google's end
-    * Uses combination thumbnailing and general JPEG compression to reduce size to a mere some dozen kilobytes.
-
-* Support for both JPEG and RAW
-    * Store tags in JPEG via IPTC metadata
-    * Store tags in RAW files through Adobe's XMP sidecar files
-        * Full support for NEF only, it is assumed but not tested whether or not CR2 and other formats will behave the
-          same.
-        * Requires a existing XMP file to be available
-
-## Usage
-
-
-```bash
-pipenv install
-```
-
-This repository was not originally, and may never be, built to serve users directly. If you have any issues, feel free
-to submit a issue and I'll see what I can do (no promises!).
-
-If all went well, all requirements will be installed and you should be able to use `phototag` freely across any *new*
-terminals.
-
-At this point, you're required to setup a account with Google for their Vision API to get a single function: Label
-Detection.
-
-Use `phototag auth [file]` to copy/move the credentials file to the package config directory.
-
-At this point, you should be able to fully take adantage of the module's capabilities by entering `phototag run` inside
-of directories you want to automatically label.
-
-Once you're done, you can use `pip uninstall phototag` to remove the package.
 
 ## To-do
 
