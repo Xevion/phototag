@@ -11,6 +11,7 @@ import os
 import random
 import shutil
 import time
+from pathlib import Path
 from threading import Thread, Lock
 from typing import Tuple, AnyStr, Optional, List, Dict, Callable
 
@@ -35,7 +36,7 @@ class MasterFileProcessor(object):
     Controls FileProcessor objects in the context of threading according to configuration options.
     """
 
-    def __init__(self, files: List[str], image_count: int, buffer_size: int, single_override: bool, client=None,
+    def __init__(self, files: List[Path], image_count: int, buffer_size: int, single_override: bool, client=None,
                  progress: Progress = None):
         """
         Initializes a MasterFileProcessor object.
@@ -65,7 +66,7 @@ class MasterFileProcessor(object):
         if self.progress:
             logger.debug(f'Progress tasks created. Task IDs: {self.tasks}')
 
-        processors = [FileProcessor(file) for file in files]
+        processors = [FileProcessor(path) for path in files]
         processors.sort(key=lambda processor: processor.size)
 
         for index, fp in enumerate(processors):
@@ -119,7 +120,7 @@ class MasterFileProcessor(object):
         # Remove the FileProcessor and the Thread fom the running dict.
         fp, thread = self.running.pop(key)
         self.finished[key] = fp
-        logger.info(f'FileProcessor {key} ("{fp.file_name}") has finished.')
+        logger.info(f'FileProcessor {key} ("{fp.file_path}") has finished.')
         # Load FileProcessors if possible
         self.load()
 
@@ -213,15 +214,15 @@ class FileProcessor(object):
     Acts as a slave to the MasterFileProcessor, but can be controlled individually.
     """
 
-    def __init__(self, file_name: str):
+    def __init__(self, file_path: Path):
         """
         Initializes a FileProcessor object.
 
-        :param file_name: The file that the FileProcessor object will shadow.
+        :param file_path: The file that the FileProcessor object will shadow.
         """
 
-        self.file_name = file_name
-        self.base, self.ext = os.path.splitext(self.file_name)
+        self.file_path = file_path
+        self.base, self.ext = os.path.splitext(self.file_path.name)
         self.ext = self.ext[1:]  # remove the prepended dot
 
         # Path to temporary file that will be optimized for upload to Google
@@ -261,12 +262,12 @@ class FileProcessor(object):
         """
         if self.xmp:
             # CPU-Bound task, needs threading or async applied
-            rgb = rawpy.imread(os.path.join(CWD, self.file_name))
+            rgb = rawpy.imread(os.path.join(CWD, self.file_path))
             imageio.imsave(self.temp_file_path, rgb.postprocess())
             rgb.close()
             self._optimize(self.temp_file_path)
         else:
-            self._optimize(os.path.join(CWD, self.file_name), copy=self.temp_file_path)
+            self._optimize(os.path.join(CWD, self.file_path), copy=self.temp_file_path)
 
     def run(self, client: vision.ImageAnnotatorClient, callback: Callable = None) -> None:
         """
@@ -316,12 +317,12 @@ class FileProcessor(object):
             # No XMP file is specified, using IPTC tagging
             else:
                 logger.debug(f"Writing {len(labels)} tags to image IPTC")
-                info = iptcinfo3.IPTCInfo(os.path.join(CWD, self.file_name))
+                info = iptcinfo3.IPTCInfo(os.path.join(CWD, self.file_path))
                 info["keywords"].extend(labels)
                 info.save()
 
                 # Remove the weird ghost file created by this iptc read/writer.
-                os.remove(os.path.join(CWD, self.file_name + "~"))
+                os.remove(os.path.join(CWD, self.file_path + "~"))
 
             # Copy dry-run
             # shutil.copy2(os.path.join(CWD, self.file_name), os.path.join(OUTPUT_PATH, self.file_name))
@@ -346,4 +347,4 @@ class FileProcessor(object):
 
         :return: the number of bytes the shadowed image takes up on the disk
         """
-        return os.path.getsize(os.path.join(CWD, self.file_name))
+        return os.path.getsize(os.path.join(CWD, self.file_path))
