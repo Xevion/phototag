@@ -11,7 +11,7 @@
 Phototag is a personal tool I use to automatically generate and layer tags describing a photo in a fast and easy way. It
 uses Google's Vision API and supports IPTC metadata and Adobe XMP Sidecar files on Windows.
 
-## Features
+### Features
 
 * Automatic tagging of photos using Google's Vision API
     * Cheap, Fast and Accurate
@@ -23,9 +23,9 @@ uses Google's Vision API and supports IPTC metadata and Adobe XMP Sidecar files 
         * Full support for NEF only, CR2 and more untested
         * Requires a existing XMP file to be available
 
-## Installation
+### Installation
 
-For basic usage, the project is currently not on PyPi. Until then, clone and install like so:
+The project is currently not on PyPi yet. Until then, clone and install like so:
 
 ```bash
 pip install
@@ -40,7 +40,9 @@ pip install -e .  # Editable mode to use the folder's current source files
 pipenv install -e .
 ```
 
-## Usage
+### Usage
+
+Documentation of all functions is included by default with the `--help` flag.
 
 ```bash
 # Copy the JSON authentication file for Google Vision API access
@@ -48,13 +50,14 @@ phototag auth [file]
 phototag run
 ````
 
-## Uninstallation
+### Uninstallation
+
 
 ```bash
 pip uninstall phototag
 ```
 
-## How does it work?
+### How does it work?
 
 This application is built in Python and utilizes the `google-cloud` python module family.
 
@@ -73,7 +76,7 @@ The basic process for each photo be tagged is as follows
 The command used to access this program is `phototag run`, which would process and label all eligible images in the
 current working directory.
 
-## To-do
+### To-do
 
 * Implement async or (proper) parallel processing to convert & tag photos faster or in batches
     * Move to more precise logging system
