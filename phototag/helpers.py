@@ -12,7 +12,8 @@ from glob import glob
 from pathlib import Path
 from typing import List, Optional, Tuple, Generator
 
-from phototag import LOSSY_EXTS, RAW_EXTS, CWD
+from phototag import CWD
+from phototag.constants import LOSSY_EXTS, RAW_EXTS
 from phototag.exceptions import PhototagException, InvalidSelectionError
 
 ALL_EXTENSIONS = RAW_EXTS + LOSSY_EXTS

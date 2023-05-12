@@ -21,7 +21,8 @@ from PIL import Image
 from google.cloud import vision
 from rich.progress import Progress
 
-from phototag import TEMP_PATH, RAW_EXTS, CWD
+from phototag import TEMP_PATH, CWD
+from phototag.constants import RAW_EXTS
 from phototag.exceptions import InvalidConfigurationError, NoSidecarFileError
 from phototag.helpers import random_characters
 from phototag.xmp import XMPParser

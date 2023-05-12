@@ -36,8 +36,3 @@ logger.info("Path constants built successfully...")
 
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = os.path.join(CONFIG_PATH, config.config["google"]["credentials"])
 
-# Extension Constants
-RAW_EXTS = ["3fr", "ari", "arw", "bay", "braw", "crw", "cr2", "cr3", "cap", "data", "dcs", "dcr", "dng", "drf", "eip",
-            "erf", "fff", "gpr", "iiq", "k25", "kdc", "mdc", "mef", "mos", "mrw", "nef", "nrw", "obm", "orf", "pef",
-            "ptx", "pxn", "r3d", "raf", "raw", "rwl", "rw2", "rwz", "sr2", "srf", "srw", "tif", "x3f", ]
-LOSSY_EXTS = ["jpeg", "jpg", "jpe", "png"]
