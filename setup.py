@@ -17,7 +17,7 @@ with open(os.path.join(CURDIR, "README.md")) as file:
 
 setup(
     name="phototag",
-    version="1.0.0",
+    version="0.1.0",
     author="Xevion",
     author_email="xevion@xevion.dev",
     description="",
@@ -33,6 +33,14 @@ setup(
         phototag=phototag.__main__:main
     """,
     zip_safe=False,
+    python_requires=">=3.7",
+    # license and classifier list:
+    # https://pypi.org/pypi?%3Aaction=list_classifiers
+    license="License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    classifiers=[
+        "Programming Language :: Python :: 3",
+        "Operating System :: OS Independent",
+    ],
     install_requires=[
         "cachetools==5.3.0; python_version ~= '3.7'",
         "certifi==2023.5.7; python_version >= '3.6'",
@@ -112,13 +120,5 @@ setup(
             "vistir==0.6.1",
             "wheel==0.40.0; python_version >= '3.7'",
         ]
-    },
-    python_requires=">=3.6",
-    # license and classifier list:
-    # https://pypi.org/pypi?%3Aaction=list_classifiers
-    license="License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
-    classifiers=[
-        "Programming Language :: Python :: 3",
-        "Operating System :: OS Independent",
-    ],
+    }
 )
