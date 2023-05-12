@@ -1,7 +1,9 @@
 from pathlib import Path
 from random import choice
 from string import ascii_lowercase
-from typing import List, Callable
+from typing import List, Callable, Tuple
+
+import pytest
 
 from phototag.helpers import walk
 
@@ -10,23 +12,35 @@ extension: Callable[[], str] = lambda: choice(['jpeg', 'jpg', 'png'])
 file: Callable[[], str] = lambda: f"{letter()}.{extension()}"
 
 
-def test_walk(tmp_path: Path):
-    files: List[Path] = [tmp_path / file(), tmp_path / file()]
-
+@pytest.fixture()
+def tmp_walkable(tmp_path: Path):
+    """
+    Creates a directory structure that can be walked
+    """
     current_dir: Path = tmp_path
-    sub_dir_counts: List[int] = [2, 4, 2]
-    for file_count in sub_dir_counts:
-        current_dir = current_dir / letter()
-        current_dir.mkdir()
+    sub_dir_counts: List[int] = [i * 2 for i in range(5)]
 
-        for _ in range(file_count):
-            path = current_dir / file()
-            files.append(path)
+    results: List[List[Path]] = []
+    for index, file_count in enumerate(sub_dir_counts):
+        files: List[Path] = [current_dir / file() for _ in range(file_count)]
+        for path in files:
             path.touch()
 
-    assert len(list(walk(tmp_path))) == sum(sub_dir_counts), "All files"
-    assert len(list(walk(tmp_path, depth=1))) == sum(sub_dir_counts[:1]), "Depth 1"
-    assert len(list(walk(tmp_path, depth=2))) == sum(sub_dir_counts[:2]), "Depth 2"
-    assert len(list(walk(tmp_path, depth=3))) == sum(sub_dir_counts[:3]), "Depth 3"
+        results.append(files)
 
-    return files
+        # Create next subdirectory
+        if index < len(sub_dir_counts) - 1:
+            current_dir = current_dir / letter()
+            current_dir.mkdir()
+
+    return tmp_path, results
+
+
+def test_walk(tmp_walkable: Tuple[Path, List[List[Path]]]):
+    root: Path = tmp_walkable[0]
+    counts: List[int] = list(map(len, tmp_walkable[1]))
+
+    assert len(list(walk(root))) == sum(counts), "All files"
+    assert len(list(walk(root, depth=1))) == sum(counts[:1]), "Depth 1"
+    assert len(list(walk(root, depth=2))) == sum(counts[:2]), "Depth 2"
+    assert len(list(walk(root, depth=3))) == sum(counts[:3]), "Depth 3"
