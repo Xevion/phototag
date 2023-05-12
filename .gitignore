@@ -1,12 +1,14 @@
 # Custom .gitignore stuff
 phototag/config/*.json
+.vscode
+.idea
+
+# Media
 *.jpg
 *.png
 *.jpeg
 *.nef
 *.xmp
-.vscode
-.idea
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
