@@ -3,19 +3,19 @@ cli.py
 
 The file responsible for providing commandline functionality to the user.
 """
-
 import logging
 import os
+import re
 import shutil
-from typing import Tuple
+from pathlib import Path
+from typing import Tuple, List
 
 import click
 from google.cloud import vision
 from rich.progress import Progress, BarColumn
 
 from phototag import config, TEMP_PATH
-from phototag.exceptions import InvalidSelectionError
-from phototag.helpers import select_files, convert_to_bytes
+from phototag.helpers import select_files, convert_to_bytes, walk
 from phototag.process import MasterFileProcessor
 
 logger = logging.getLogger(__name__)
@@ -31,7 +31,11 @@ def cli():
 @cli.command('run', short_help='Run the tagging service.')
 @click.argument('files', nargs=-1, type=click.Path(exists=True))
 @click.option('-a', '--all', is_flag=True, help='Add all files in the current directory to be tagged.')
-@click.option('-r', '--regex', help='Use RegEx to match files in the current directory')
+@click.option('-E', '--regex', help='Use RegEx to filter files selected.')
+@click.option('-m', '--regex-mode', help='Selects the behavior of the RegEx\'s input string',
+              type=click.Choice(['absolute', 'relative', 'filename'], case_sensitive=False), default='filename')
+@click.option('-r', '--recursive', help='Recursively search for files in the current directory', is_flag=True)
+@click.option('--depth', type=int, help='The depth to search for files in the current directory', default=-1)
 @click.option('-g', '--glob', 'glob_pattern', help='Use Glob (UNIX-style file pattern matching) to match files.')
 @click.option('--max-threads', type=int, help='The maximum number of threads that can be running at any point')
 @click.option('--max-buffer-size', 'max_buffer',
@@ -41,7 +45,9 @@ def cli():
 @click.option('-d', '--dry-run', is_flag=True, help='Dry-run mode: Don\'t actually write to or modify files.')
 @click.option('-t', '--test', is_flag=True,
               help='Don\'t actually query the Vision API, just generate fake tags for testing purposes.')
-def run(files: Tuple[str], all: bool = False, regex: str = None, glob_pattern: str = None, max_threads: int = None,
+def run(files: Tuple[str], all: bool = False, regex: str = None, recursive: bool = None, depth: int = None,
+        glob_pattern: str = None,
+        max_threads: int = None,
         max_buffer: str = None, forget: bool = False, overwrite: bool = False, dry_run: bool = False,
         test: bool = False):
     """
@@ -50,30 +56,57 @@ def run(files: Tuple[str], all: bool = False, regex: str = None, glob_pattern: s
     Files can also be selected using --all, --regex and --glob.
     --max-threads, --max-buffer-size and --forget will inherit their settings from the global config.
     """
-    try:
-        files = select_files(list(files), regex, glob_pattern)
-    except InvalidSelectionError:
-        logger.exception(InvalidSelectionError.__doc__, exc_info=False)
-    else:
-        client = vision.ImageAnnotatorClient()
-        try:
-            # Create the 'temp' directory
-            if not os.path.exists(TEMP_PATH):
-                logger.info("Creating temporary processing directory")
-                os.makedirs(TEMP_PATH)
+    print(files)
+    files: List[Path] = [Path(file) for file in files]
 
-            with Progress("[progress.description]{task.description}", BarColumn(bar_width=None),
-                          "{task.completed}/{task.total} [progress.percentage]{task.percentage:>3.0f}%") as progress:
-                mp = MasterFileProcessor(files, 10, convert_to_bytes("2 MB"), True, client=client, progress=progress)
-                mp.load()
-                logger.info('Finished loading/starting initial threads.')
-                mp.join()
-                logger.info('Finished joining threads, now quitting.')
-        except Exception as error:
-            logger.exception(str(error))
-        finally:
+    cwd = Path.cwd()
+    if glob_pattern:
+        logger.debug('Using glob pattern: {}'.format(glob_pattern))
+        files.extend(cwd.rglob(glob_pattern) if recursive else cwd.glob(glob_pattern))
+    elif all:
+        # Default behavior: Select all in CWD, if recursive, walk with optional depth (default -1, infinite)
+        if recursive:
+            logger.debug('Using recursive search with depth: {}'.format(depth))
+            files.extend(path for path in walk(cwd, depth=depth))
+        else:
+            logger.debug('Pulling all files from current directory.')
+            files.extend([item for item in cwd.iterdir() if item.is_file()])
+
+    # Regex is applied as a 'filter' to each file selected.
+    if regex:
+        logger.debug('Applying RegEx pattern: {}'.format(regex))
+        compiled_regex = re.compile(regex)
+        files = [file for file in files if compiled_regex.match(file)]
+
+    if len(files) < 1:
+        logger.error('No files selected for processing. Cannot proceed.')
+        return
+
+    logger.debug('{} files selected for processing.'.format(len(files)))
+
+    client = vision.ImageAnnotatorClient()
+    logger.debug("Vision API Client created.")
+
+    try:
+        # Create the 'temp' directory
+        if not os.path.exists(TEMP_PATH):
+            logger.info("Creating temporary processing directory")
+            os.makedirs(TEMP_PATH)
+
+        with Progress("[progress.description]{task.description}", BarColumn(bar_width=None),
+                      "{task.completed}/{task.total} [progress.percentage]{task.percentage:>3.0f}%") as progress:
+            mp = MasterFileProcessor(files, 10, convert_to_bytes("2 MB"), True, client=client, progress=progress)
+            mp.load()
+            logger.info('Finished loading/starting initial threads.')
+            mp.join()
+            logger.info('Finished joining threads, now quitting.')
+    except Exception as error:
+        logger.exception(str(error))
+    finally:
+        # If the temporary path was created, remove it.
+        if os.path.exists(TEMP_PATH):
             os.rmdir(TEMP_PATH)
-            logger.info("Temporary directory removed.")
+        logger.debug("Temporary directory removed.")
 
 
 @cli.command('collect')
