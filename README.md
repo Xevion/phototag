@@ -52,7 +52,6 @@ phototag run
 
 ### Uninstallation
 
-
 ```bash
 pip uninstall phototag
 ```
@@ -78,10 +77,22 @@ current working directory.
 
 ### To-do
 
-* Implement async or (proper) parallel processing to convert & tag photos faster or in batches
-    * Move to more precise logging system
-* Test with different RAW file formats
-    * Stress test use with Adobe sidecar files
-* Make more robust configuration file system
-    * Integration with click CLI
-* Better, to-the-point logging
+* Performance
+    * Async/Threading/Parallelization
+        * With configurable limits/targets
+    * GPU-accelerated Image Thumbnailing
+    * Memory/Disk Usage Metering
+    * Image Hashing & Tag Caching
+* File Filtering
+    * Regex/Glob Pattern Matching
+    * Include/Exclude Files/Directories
+* Tag Filtering
+    * Include/Exclude Tags
+* Compatability
+    * All popular RAW formats
+    * Adobe XMP sidecar files
+* Configuration
+    * Pull from configuration files with runtime overrides
+* Logging
+    * Add additional logs
+    * Allow configuration of verbosity/level application wide
