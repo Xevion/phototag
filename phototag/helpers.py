@@ -19,15 +19,11 @@ ALL_EXTENSIONS = RAW_EXTS + LOSSY_EXTS
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
-# kB Kilobyte
-# KB/KiB Kibibyte
-# Kb Kibibit
-# kb Kilobit
-
 byte_magnitudes = {
     "B": 1,
 }
 
+# Generate every variation of byte suffixes
 for magnitude, suffix_kibi in enumerate(["K", "M", "G", "T", "P", "E", "Z", "Y"], start=0):
     suffix_kilo = suffix_kibi.lower()
     values: List[Tuple[str, int]] = [
@@ -45,8 +41,6 @@ for magnitude, suffix_kibi in enumerate(["K", "M", "G", "T", "P", "E", "Z", "Y"]
 
     for suffix, scale in values:
         byte_magnitudes[suffix] = scale
-
-print(byte_magnitudes)
 
 
 def valid_extension(extension: str) -> bool:

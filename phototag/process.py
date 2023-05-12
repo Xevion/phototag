@@ -78,7 +78,7 @@ class MasterFileProcessor(object):
         """
         Checks that the MasterFileProcessor can successfully process all files with the current configuration options.
 
-        :except Exception: when the current configuration will be unable to complete based on the current parameters.
+        :except InvalidConfigurationError: when the current configuration will be unable to complete based on the current parameters.
         """
         # single_override ensures that the application will always complete, even if slowly, one-by-one
         if not self.single_override:
