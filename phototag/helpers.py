@@ -25,7 +25,7 @@ byte_magnitudes = {
 }
 
 # Generate every variation of byte suffixes
-for magnitude, suffix_kibi in enumerate(["K", "M", "G", "T", "P", "E", "Z", "Y"], start=0):
+for magnitude, suffix_kibi in enumerate(["K", "M", "G", "T", "P", "E", "Z", "Y"], start=1):
     suffix_kilo = suffix_kibi.lower()
     values: List[Tuple[str, int]] = [
         # Kibi (1024)
@@ -95,7 +95,7 @@ def convert_to_bytes(size_string: str) -> int:
     :param size_string: A string representation of data size, a integer followed by 1-2 letters indicating unit.
     :return: The number of bytes the given string is equivalent to.
     """
-    match = re.match(r"(\d+)\s*(\w{1,2})", size_string)
+    match = re.match(r"\s*(\d+)\s*(\wi?[Bb])\s*", size_string)
     return int(match.group(1)) * byte_magnitudes.get(match.group(2), 0)
 
 
