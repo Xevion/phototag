@@ -21,6 +21,7 @@ setuptools = "*"
 vistir = "==0.6.1"
 pipenv-setup = {extras = ["black"], version = "*"}
 black = "*"
+pytest = "*"
 
 [requires]
 python_version = "3.11"

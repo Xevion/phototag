@@ -85,7 +85,7 @@ setup(
     extras_require={
         "dev": [
             "attrs==23.1.0; python_version >= '3.7'",
-            "black==22.12.0; python_version >= '3.6'",
+            "black==22.12.0",
             "cached-property==1.5.2",
             "cerberus==1.3.4",
             "certifi==2023.5.7; python_version >= '3.6'",
@@ -95,6 +95,7 @@ setup(
             "colorama==0.4.6; platform_system == 'Windows'",
             "distlib==0.3.6",
             "idna==3.4; python_version >= '3.5'",
+            "iniconfig==2.0.0; python_version >= '3.7'",
             "mypy-extensions==1.0.0; python_version >= '3.5'",
             "orderedmultidict==1.0.1",
             "packaging==20.9; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'",
@@ -106,7 +107,9 @@ setup(
             "pipfile==0.0.2",
             "platformdirs==3.5.1; python_version >= '3.7'",
             "plette[validation]==0.4.4; python_version >= '3.7'",
+            "pluggy==1.0.0; python_version >= '3.6'",
             "pyparsing==3.0.9; python_version >= '3.1'",
+            "pytest==7.3.1",
             "python-dateutil==2.8.2; python_version >= '2.7' and python_version not in '3.0, 3.1, 3.2, 3.3'",
             "requests==2.30.0; python_version >= '3.7'",
             "requirementslib==1.6.9; python_version >= '3.7'",
