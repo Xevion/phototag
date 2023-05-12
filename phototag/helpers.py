@@ -121,6 +121,24 @@ def walk(root: Path, current: Optional[Path] = None, depth: Optional[int] = None
             yield from walk(root, current=item, depth=depth)
 
 
+def path_to_match_mode(path: Path, match_mode: str, root: Optional[Path] = None) -> str:
+    """
+    Converts a path to a string based on the match mode.
+    :param path: The path to convert
+    :param match_mode: The match mode to use
+    :param root: The relative directory to use for 'relative' match mode. Defaults to the current working directory.
+    """
+    root = root or Path.cwd()
+    if match_mode == "relative":
+        return str(path.relative_to(root or Path.cwd()))
+    elif match_mode == "absolute":
+        return str(path.resolve())
+    elif match_mode == "filename":
+        return path.name
+    else:
+        raise ValueError(f"Invalid match mode: {match_mode}")
+
+
 def select_files(files: List[str], regex: Optional[str], glob_pattern: Optional[str]) -> List[str]:
     """
     Helper function for selecting files in the CWD (or subdirectories, via Glob) and filtering them.

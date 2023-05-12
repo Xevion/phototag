@@ -15,7 +15,7 @@ from google.cloud import vision
 from rich.progress import Progress, BarColumn
 
 from phototag import config, TEMP_PATH
-from phototag.helpers import select_files, convert_to_bytes, walk
+from phototag.helpers import select_files, convert_to_bytes, walk, path_to_match_mode
 from phototag.process import MasterFileProcessor
 
 logger = logging.getLogger(__name__)
@@ -46,7 +46,7 @@ def cli():
 @click.option('-t', '--test', is_flag=True,
               help='Don\'t actually query the Vision API, just generate fake tags for testing purposes.')
 def run(files: Tuple[str], all: bool = False, regex: str = None, recursive: bool = None, depth: int = None,
-        glob_pattern: str = None,
+        glob_pattern: str = None, regex_mode: str = None,
         max_threads: int = None,
         max_buffer: str = None, forget: bool = False, overwrite: bool = False, dry_run: bool = False,
         test: bool = False):
@@ -76,7 +76,8 @@ def run(files: Tuple[str], all: bool = False, regex: str = None, recursive: bool
     if regex:
         logger.debug('Applying RegEx pattern: {}'.format(regex))
         compiled_regex = re.compile(regex)
-        files = [file for file in files if compiled_regex.match(file)]
+        files = [file for file in files if
+                 compiled_regex.match(path_to_match_mode(file, regex_mode, root=cwd))]
 
     if len(files) < 1:
         logger.error('No files selected for processing. Cannot proceed.')
