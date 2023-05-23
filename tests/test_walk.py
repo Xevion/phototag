@@ -22,7 +22,9 @@ def tmp_walkable(tmp_path: Path):
 
     results: List[List[Path]] = []
     for index, file_count in enumerate(sub_dir_counts):
-        files: List[Path] = [current_dir / file() for _ in range(file_count)]
+        # Names must be unique within the directory, otherwise touch() collapses
+        # collisions and fewer files exist than intended
+        files: List[Path] = [current_dir / f"{ascii_lowercase[i]}.{extension()}" for i in range(file_count)]
         for path in files:
             path.touch()
 

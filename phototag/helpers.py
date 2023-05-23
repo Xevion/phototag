@@ -118,7 +118,8 @@ def walk(root: Path, current: Optional[Path] = None, depth: Optional[int] = None
 
         # Recursive handling
         cur_depth: int = len(item.resolve().parents) - root_abs_depth - 1
-        if depth is None or cur_depth < depth:
+        # depth is counted inclusively from the root, so depth=1 is the root level only
+        if depth is None or cur_depth < depth - 1:
             yield from walk(root, current=item, depth=depth)
 
 
